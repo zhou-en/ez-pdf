@@ -17,9 +17,7 @@ fn get_page_rotation(path: &Path, page_num: u32) -> i64 {
     let page_id = *pages.get(&page_num).expect("page not found");
     let page = doc.get_object(page_id).expect("get page object");
     let dict = page.as_dict().expect("page is dict");
-    dict.get(b"Rotate")
-        .and_then(|r| r.as_i64())
-        .unwrap_or(0)
+    dict.get(b"Rotate").and_then(|r| r.as_i64()).unwrap_or(0)
 }
 
 #[test]
@@ -42,7 +40,11 @@ fn rotate_specific_pages_only() {
     rotate(input.as_path(), 90, Some("1,3"), out.path()).unwrap();
 
     assert_eq!(get_page_rotation(out.path(), 1), 90);
-    assert_eq!(get_page_rotation(out.path(), 2), 0, "page 2 should not be rotated");
+    assert_eq!(
+        get_page_rotation(out.path(), 2),
+        0,
+        "page 2 should not be rotated"
+    );
     assert_eq!(get_page_rotation(out.path(), 3), 90);
 }
 

@@ -71,3 +71,18 @@
 
 **Deviations / blockers found:**
 - none
+
+## 2026-03-12 — Phase 6 complete: Rotate Command
+
+**Completed tasks:**
+- 6.1 [RED] 6 failing tests (rotate all, specific pages, -90=270, 180, invalid, round-trip)
+- 6.2 [GREEN] rotate() edits /Rotate dict entry, normalized to 0/90/180/270 via rem_euclid
+- 6.3 [RED] 2 failing CLI tests (rotate all, rotate --pages flag)
+- 6.4 [GREEN] ezpdf rotate subcommand wired
+- 6.5 [REFACTOR] fmt clean, normalize_degrees validates multiples of 90
+- 6.6 [REVIEW] 46 tests pass, clippy/fmt clean
+
+**Tests passing:** 46
+
+**Deviations / blockers found:**
+- none

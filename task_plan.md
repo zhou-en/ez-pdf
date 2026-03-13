@@ -140,26 +140,26 @@
 
 ### Definition of Done
 
-- [ ] `cargo test -p ezpdf-core rotate` passes
-- [ ] Round-trip test: rotate +90° then -90° equals original (verified by page /Rotate value)
-- [ ] Manual demo: open rotated PDF in Preview — pages visually rotated
+- [x] `cargo test -p ezpdf-core rotate` passes
+- [x] Round-trip test: rotate +90° then -90° equals original (verified by page /Rotate value)
+- [x] Manual demo: open rotated PDF in Preview — pages visually rotated
 
 > [!tip] Skills for this phase
 > - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
 
 ### Tasks
 
-- [ ] **6.1 [RED]** Write failing tests for `ezpdf_core::rotate(input: &Path, degrees: i32, pages: Option<&str>, output: &Path) -> Result<(), EzPdfError>`. Tests: rotate all pages 90° → each page dict has `/Rotate = 90`; rotate specific pages → only those pages have updated `/Rotate`; rotate by -90 → same as 270; invalid degrees (45) → `EzPdfError`; round-trip (rotate 90 then rotate -90) → `/Rotate` value equals original. Run — must **FAIL**.
+- [x] **6.1 [RED]** Write failing tests for `ezpdf_core::rotate(input: &Path, degrees: i32, pages: Option<&str>, output: &Path) -> Result<(), EzPdfError>`. Tests: rotate all pages 90° → each page dict has `/Rotate = 90`; rotate specific pages → only those pages have updated `/Rotate`; rotate by -90 → same as 270; invalid degrees (45) → `EzPdfError`; round-trip (rotate 90 then rotate -90) → `/Rotate` value equals original. Run — must **FAIL**.
 
-- [ ] **6.2 [GREEN]** Create `ezpdf-core/src/rotate.rs`. Implement by getting each target page's `ObjectId` via `doc.get_pages()`, then using `doc.get_object_mut(page_id)` to access the page `Dictionary` and call `dict.set("Rotate", Object::Integer(new_degrees))`. Read the existing `/Rotate` value first (default 0 if absent) and add the requested degrees mod 360. **Note: lopdf has no built-in `rotate_pages` API — you must edit the page dictionary directly.** All tests must **PASS**.
+- [x] **6.2 [GREEN]** Create `ezpdf-core/src/rotate.rs`. Implement by getting each target page's `ObjectId` via `doc.get_pages()`, then using `doc.get_object_mut(page_id)` to access the page `Dictionary` and call `dict.set("Rotate", Object::Integer(new_degrees))`. Read the existing `/Rotate` value first (default 0 if absent) and add the requested degrees mod 360. **Note: lopdf has no built-in `rotate_pages` API — you must edit the page dictionary directly.** All tests must **PASS**.
 
-- [ ] **6.3 [RED]** Write failing CLI tests for `ezpdf rotate input.pdf 90 -o out.pdf` and `ezpdf rotate input.pdf 90 --pages 1,3 -o out.pdf`. Run — must **FAIL**.
+- [x] **6.3 [RED]** Write failing CLI tests for `ezpdf rotate input.pdf 90 -o out.pdf` and `ezpdf rotate input.pdf 90 --pages 1,3 -o out.pdf`. Run — must **FAIL**.
 
-- [ ] **6.4 [GREEN]** Create `ezpdf-cli/src/commands/rotate.rs`. All tests must **PASS**.
+- [x] **6.4 [GREEN]** Create `ezpdf-cli/src/commands/rotate.rs`. All tests must **PASS**.
 
-- [ ] **6.5 [REFACTOR]** Clean up rotation logic. Normalize degrees to 0/90/180/270 before storing.
+- [x] **6.5 [REFACTOR]** Clean up rotation logic. Normalize degrees to 0/90/180/270 before storing.
 
-- [ ] **6.6 [REVIEW]** Run `cargo test --workspace`. Manual demo in Preview. Check DoD. Commit. Update `progress.md`.
+- [x] **6.6 [REVIEW]** Run `cargo test --workspace`. Manual demo in Preview. Check DoD. Commit. Update `progress.md`.
 
 ---
 
