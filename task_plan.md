@@ -34,22 +34,22 @@
 
 ### Definition of Done
 
-- [ ] `cargo test -p ezpdf-core` passes with 0 failures
-- [ ] All page range edge cases covered (see task 2.1 for the full list)
-- [ ] `EzPdfError` enum defined with `thiserror`
+- [x] `cargo test -p ezpdf-core` passes with 0 failures
+- [x] All page range edge cases covered (see task 2.1 for the full list)
+- [x] `EzPdfError` enum defined with `thiserror`
 
 > [!tip] Skills for this phase
 > - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
 
 ### Tasks
 
-- [ ] **2.1 [RED]** Write failing tests for `ezpdf_core::page_range::parse(input: &str, page_count: u32) -> Result<Vec<u32>, EzPdfError>`. Cover: single page `"3"`, range `"1-5"`, list `"1,3,5"`, combined `"1-3,5,7-9"`, open-ended `"3-"` (to last page), all pages `"1-"`. Error cases: out of range (`"15"` for 10-page doc), invalid syntax (`"abc"`), reversed range (`"7-3"`), zero page (`"0"`), empty string. Use table-driven tests with a `cases` vec of `(input, page_count, expected_result)`. Also write unit tests for `EzPdfError` display messages — verify they contain the page count in out-of-range errors. Run `cargo test -p ezpdf-core` — tests must **FAIL** (items don't exist yet).
+- [x] **2.1 [RED]** Write failing tests for `ezpdf_core::page_range::parse(input: &str, page_count: u32) -> Result<Vec<u32>, EzPdfError>`. Cover: single page `"3"`, range `"1-5"`, list `"1,3,5"`, combined `"1-3,5,7-9"`, open-ended `"3-"` (to last page), all pages `"1-"`. Error cases: out of range (`"15"` for 10-page doc), invalid syntax (`"abc"`), reversed range (`"7-3"`), zero page (`"0"`), empty string. Use table-driven tests with a `cases` vec of `(input, page_count, expected_result)`. Also write unit tests for `EzPdfError` display messages — verify they contain the page count in out-of-range errors. Run `cargo test -p ezpdf-core` — tests must **FAIL** (items don't exist yet).
 
-- [ ] **2.2 [GREEN]** Create `ezpdf-core/src/error.rs` with `EzPdfError` enum (variants: `PageOutOfRange { page, total }`, `InvalidSyntax { input, hint }`, `EncryptedPdf`, `Io(#[from] std::io::Error)`, `Pdf(String)`). Create `ezpdf-core/src/page_range.rs` with `pub fn parse(input: &str, page_count: u32) -> Result<Vec<u32>, EzPdfError>`. Update `ezpdf-core/src/lib.rs` to export both modules. Run `cargo test -p ezpdf-core` — all tests must **PASS**.
+- [x] **2.2 [GREEN]** Create `ezpdf-core/src/error.rs` with `EzPdfError` enum (variants: `PageOutOfRange { page, total }`, `InvalidSyntax { input, hint }`, `EncryptedPdf`, `Io(#[from] std::io::Error)`, `Pdf(String)`). Create `ezpdf-core/src/page_range.rs` with `pub fn parse(input: &str, page_count: u32) -> Result<Vec<u32>, EzPdfError>`. Update `ezpdf-core/src/lib.rs` to export both modules. Run `cargo test -p ezpdf-core` — all tests must **PASS**.
 
-- [ ] **2.3 [REFACTOR]** Review `page_range.rs`: extract helper functions if the parse function is >40 lines. Ensure all `EzPdfError` messages are user-friendly. Run `cargo test -p ezpdf-core` — all tests still pass. Run `cargo clippy -p ezpdf-core -- -D warnings`.
+- [x] **2.3 [REFACTOR]** Review `page_range.rs`: extract helper functions if the parse function is >40 lines. Ensure all `EzPdfError` messages are user-friendly. Run `cargo test -p ezpdf-core` — all tests still pass. Run `cargo clippy -p ezpdf-core -- -D warnings`.
 
-- [ ] **2.4 [REVIEW]** Check Phase 2 DoD. Run `cargo test -p ezpdf-core --verbose`. Count tests: should be ≥15 test cases. Commit. Update `progress.md`.
+- [x] **2.4 [REVIEW]** Check Phase 2 DoD. Run `cargo test -p ezpdf-core --verbose`. Count tests: should be ≥15 test cases. Commit. Update `progress.md`.
 
 ---
 

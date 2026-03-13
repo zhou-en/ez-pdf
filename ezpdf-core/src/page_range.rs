@@ -10,55 +10,51 @@ pub fn parse(input: &str, page_count: u32) -> Result<Vec<u32>, EzPdfError> {
 
     let mut pages = Vec::new();
     for segment in input.split(',') {
-        let segment = segment.trim();
-        if segment.ends_with('-') {
-            // Open-ended range: "N-" means N to last page
-            let start_str = &segment[..segment.len() - 1];
-            let start = parse_page_number(start_str, input)?;
-            if start > page_count {
-                return Err(EzPdfError::PageOutOfRange {
-                    page: start,
-                    total: page_count,
-                });
-            }
-            for p in start..=page_count {
-                pages.push(p);
-            }
-        } else if let Some(dash_pos) = segment.find('-') {
-            // Explicit range: "N-M"
-            let start_str = &segment[..dash_pos];
-            let end_str = &segment[dash_pos + 1..];
-            let start = parse_page_number(start_str, input)?;
-            let end = parse_page_number(end_str, input)?;
-            if start > end {
-                return Err(EzPdfError::InvalidSyntax {
-                    input: input.to_string(),
-                    hint: format!("range start {start} is greater than end {end}"),
-                });
-            }
-            if end > page_count {
-                return Err(EzPdfError::PageOutOfRange {
-                    page: end,
-                    total: page_count,
-                });
-            }
-            for p in start..=end {
-                pages.push(p);
-            }
-        } else {
-            // Single page
-            let page = parse_page_number(segment, input)?;
-            if page > page_count {
-                return Err(EzPdfError::PageOutOfRange {
-                    page,
-                    total: page_count,
-                });
-            }
-            pages.push(page);
-        }
+        parse_segment(segment.trim(), input, page_count, &mut pages)?;
     }
-
     Ok(pages)
+}
+
+fn parse_segment(
+    segment: &str,
+    original_input: &str,
+    page_count: u32,
+    out: &mut Vec<u32>,
+) -> Result<(), EzPdfError> {
+    if let Some(start_str) = segment.strip_suffix('-') {
+        // Open-ended range: "N-" means N to last page
+        let start = parse_page_number(start_str, original_input)?;
+        check_in_range(start, page_count, original_input)?;
+        out.extend(start..=page_count);
+    } else if let Some(dash_pos) = segment.find('-') {
+        // Explicit range: "N-M"
+        let start = parse_page_number(&segment[..dash_pos], original_input)?;
+        let end = parse_page_number(&segment[dash_pos + 1..], original_input)?;
+        if start > end {
+            return Err(EzPdfError::InvalidSyntax {
+                input: original_input.to_string(),
+                hint: format!("range start {start} is greater than end {end}"),
+            });
+        }
+        check_in_range(end, page_count, original_input)?;
+        out.extend(start..=end);
+    } else {
+        // Single page
+        let page = parse_page_number(segment, original_input)?;
+        check_in_range(page, page_count, original_input)?;
+        out.push(page);
+    }
+    Ok(())
+}
+
+fn check_in_range(page: u32, page_count: u32, _original_input: &str) -> Result<(), EzPdfError> {
+    if page > page_count {
+        return Err(EzPdfError::PageOutOfRange {
+            page,
+            total: page_count,
+        });
+    }
+    Ok(())
 }
 
 fn parse_page_number(s: &str, original_input: &str) -> Result<u32, EzPdfError> {

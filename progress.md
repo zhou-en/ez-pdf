@@ -12,3 +12,16 @@
 
 **Deviations / blockers found:**
 - none
+
+## 2026-03-12 — Phase 2 complete: Page Range Parser
+
+**Completed tasks:**
+- 2.1 [RED] 15 failing tests for page_range::parse + 2 EzPdfError display tests
+- 2.2 [GREEN] parse() + parse_segment() + parse_page_number() + check_in_range() helpers
+- 2.3 [REFACTOR] extracted helpers, fixed clippy::manual_strip warning
+- 2.4 [REVIEW] 17/17 tests pass, clippy clean, fmt clean
+
+**Tests passing:** 17
+
+**Deviations / blockers found:**
+- none
