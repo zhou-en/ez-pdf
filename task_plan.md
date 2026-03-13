@@ -113,26 +113,26 @@
 
 ### Definition of Done
 
-- [ ] `cargo test -p ezpdf-core split` passes
-- [ ] `cargo test -p ezpdf-cli split` passes
-- [ ] Demo: `split --each` produces N files named `page-001.pdf` through `page-00N.pdf`
+- [x] `cargo test -p ezpdf-core split` passes
+- [x] `cargo test -p ezpdf-cli split` passes
+- [x] Demo: `split --each` produces N files named `page-001.pdf` through `page-00N.pdf`
 
 > [!tip] Skills for this phase
 > - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
 
 ### Tasks
 
-- [ ] **5.1 [RED]** Write failing tests for `ezpdf_core::split_range` and `ezpdf_core::split_each`. `split_range` tests: extract pages 2-4 from 5-page PDF → output has 3 pages. `split_each` tests: burst 5-page PDF → 5 files created, named `page-1.pdf` through `page-5.pdf` (zero-padded to match digit count), output dir created if missing. Run — must **FAIL**.
+- [x] **5.1 [RED]** Write failing tests for `ezpdf_core::split_range` and `ezpdf_core::split_each`. `split_range` tests: extract pages 2-4 from 5-page PDF → output has 3 pages. `split_each` tests: burst 5-page PDF → 5 files created, named `page-1.pdf` through `page-5.pdf` (zero-padded to match digit count), output dir created if missing. Run — must **FAIL**.
 
-- [ ] **5.2 [GREEN]** Create `ezpdf-core/src/split.rs`. Implement both functions. Zero-pad filenames based on total page count (e.g., 10 pages → `page-01.pdf`; 100 pages → `page-001.pdf`). All tests must **PASS**.
+- [x] **5.2 [GREEN]** Create `ezpdf-core/src/split.rs`. Implement both functions. Zero-pad filenames based on total page count (e.g., 10 pages → `page-01.pdf`; 100 pages → `page-001.pdf`). All tests must **PASS**.
 
-- [ ] **5.3 [RED]** Write failing CLI tests: mode 1 `split input.pdf 1-3 -o part.pdf`; mode 2 `split input.pdf --each -o /tmp/pages/`. Run — must **FAIL**.
+- [x] **5.3 [RED]** Write failing CLI tests: mode 1 `split input.pdf 1-3 -o part.pdf`; mode 2 `split input.pdf --each -o /tmp/pages/`. Run — must **FAIL**.
 
-- [ ] **5.4 [GREEN]** Create `ezpdf-cli/src/commands/split.rs`. Handle both modes with `#[clap(group = ...)]` or subcommand branching. All tests must **PASS**.
+- [x] **5.4 [GREEN]** Create `ezpdf-cli/src/commands/split.rs`. Handle both modes with `#[clap(group = ...)]` or subcommand branching. All tests must **PASS**.
 
-- [ ] **5.5 [REFACTOR]** Clean up. Ensure output directory creation is handled cleanly with good error messages if creation fails.
+- [x] **5.5 [REFACTOR]** Clean up. Ensure output directory creation is handled cleanly with good error messages if creation fails.
 
-- [ ] **5.6 [REVIEW]** Run `cargo test --workspace`. Manual demo: burst a PDF, verify filenames. Check DoD. Commit. Update `progress.md`.
+- [x] **5.6 [REVIEW]** Run `cargo test --workspace`. Manual demo: burst a PDF, verify filenames. Check DoD. Commit. Update `progress.md`.
 
 ---
 

@@ -4,6 +4,7 @@ mod output;
 use clap::{Parser, Subcommand};
 use commands::merge::MergeArgs;
 use commands::remove::RemoveArgs;
+use commands::split::SplitArgs;
 
 #[derive(Parser)]
 #[command(name = "ezpdf", version, about = "Fast lossless PDF manipulation")]
@@ -18,6 +19,8 @@ enum Commands {
     Merge(MergeArgs),
     /// Remove specific pages from a PDF
     Remove(RemoveArgs),
+    /// Extract a page range or burst into individual pages
+    Split(SplitArgs),
 }
 
 fn main() {
@@ -26,6 +29,7 @@ fn main() {
     let result = match cli.command {
         Commands::Merge(args) => commands::merge::run(args),
         Commands::Remove(args) => commands::remove::run(args),
+        Commands::Split(args) => commands::split::run(args),
     };
 
     if let Err(e) = result {

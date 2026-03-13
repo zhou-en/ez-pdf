@@ -12,7 +12,10 @@ fn fixture(name: &str) -> std::path::PathBuf {
 }
 
 fn page_count(path: &Path) -> u32 {
-    Document::load(path).expect("load output PDF").get_pages().len() as u32
+    Document::load(path)
+        .expect("load output PDF")
+        .get_pages()
+        .len() as u32
 }
 
 // --- split_range tests ---
@@ -48,7 +51,13 @@ fn split_each_produces_one_file_per_page() {
 
     let count = std::fs::read_dir(dir.path())
         .unwrap()
-        .filter(|e| e.as_ref().unwrap().path().extension().map_or(false, |e| e == "pdf"))
+        .filter(|e| {
+            e.as_ref()
+                .unwrap()
+                .path()
+                .extension()
+                .map_or(false, |e| e == "pdf")
+        })
         .count();
     assert_eq!(count, 5);
 }
@@ -68,7 +77,13 @@ fn split_each_filenames_are_zero_padded() {
 
     assert_eq!(
         names,
-        vec!["page-1.pdf", "page-2.pdf", "page-3.pdf", "page-4.pdf", "page-5.pdf"]
+        vec![
+            "page-1.pdf",
+            "page-2.pdf",
+            "page-3.pdf",
+            "page-4.pdf",
+            "page-5.pdf"
+        ]
     );
 }
 
@@ -87,7 +102,12 @@ fn split_each_creates_output_dir_if_missing() {
     assert_eq!(
         std::fs::read_dir(&sub)
             .unwrap()
-            .filter(|e| e.as_ref().unwrap().path().extension().map_or(false, |e| e == "pdf"))
+            .filter(|e| e
+                .as_ref()
+                .unwrap()
+                .path()
+                .extension()
+                .map_or(false, |e| e == "pdf"))
             .count(),
         3
     );

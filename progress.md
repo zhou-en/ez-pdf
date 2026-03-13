@@ -56,3 +56,18 @@
 
 **Deviations / blockers found:**
 - none
+
+## 2026-03-12 — Phase 5 complete: Split Command
+
+**Completed tasks:**
+- 5.1 [RED] 6 failing tests (split_range 2 tests, split_each 4 tests)
+- 5.2 [GREEN] split_range/split_each via build_kept + digits_needed for zero-padding
+- 5.3 [RED] 2 failing CLI tests (range mode + --each mode)
+- 5.4 [GREEN] ezpdf split subcommand, range vs --each branching
+- 5.5 [REFACTOR] fmt + clippy clean
+- 5.6 [REVIEW] 38 tests pass
+
+**Tests passing:** 38
+
+**Deviations / blockers found:**
+- none

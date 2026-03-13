@@ -30,7 +30,7 @@ pub fn remove(input: &Path, pages: &str, output: &Path) -> Result<(), EzPdfError
         .map_err(|e| EzPdfError::Pdf(e.to_string()))
 }
 
-fn build_kept(mut doc: Document, keep: &[u32]) -> Result<Document, EzPdfError> {
+pub(crate) fn build_kept(mut doc: Document, keep: &[u32]) -> Result<Document, EzPdfError> {
     let all_pages = doc.get_pages();
 
     // Get page IDs to keep in order
