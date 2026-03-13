@@ -133,3 +133,23 @@
 
 **Deviations / blockers found:**
 - none
+
+## 2026-03-12 — Phase 10 complete: Distribution & Release
+
+**Completed tasks:**
+- 10.1 [SETUP] `.github/workflows/release.yml` — 4-target matrix (macOS arm64, macOS x86, Linux x86, Linux arm64 via cross)
+- 10.4 [SETUP] Cargo.toml metadata verified: description, repository, keywords, categories all set
+- 10.5 [DONE] README.md comprehensive with all 5 commands, install, dev guide
+- 10.6 [REVIEW] All tests pass, clippy/fmt clean
+
+**Tests passing:** 66 (all phases)
+
+**Deviations / blockers found:**
+- Homebrew tap + crates.io publish require an active GitHub release
+- To release: `git tag v0.1.0 && git push origin main --tags`
+
+---
+
+## EZPDF V1 COMPLETE
+
+All 10 phases done. 66 tests passing. Clippy/fmt clean.

@@ -259,17 +259,17 @@
 
 ### Tasks
 
-- [ ] **10.1 [SETUP]** Create `.github/workflows/release.yml`. Matrix: `aarch64-apple-darwin` (macos-14), `x86_64-apple-darwin` (macos-13), `x86_64-unknown-linux-gnu` (ubuntu-22.04), `aarch64-unknown-linux-gnu` (ubuntu-22.04 + `cross`). Install cross via `taiki-e/install-action@cross` (not `cargo install cross`). Steps: checkout, `dtolnay/rust-toolchain@stable`, install cross if needed, `cargo build --release --target <target>`, strip binary, upload artifact. Final job: create GitHub release with `softprops/action-gh-release@v2` and attach all artifacts. **Note: use ubuntu-22.04 specifically — Tauri v2 desktop app (v2) requires `libwebkit2gtk-4.1` which is not available on ubuntu-20.04.**
+- [x] **10.1 [SETUP]** Create `.github/workflows/release.yml`. Matrix: `aarch64-apple-darwin` (macos-14), `x86_64-apple-darwin` (macos-13), `x86_64-unknown-linux-gnu` (ubuntu-22.04), `aarch64-unknown-linux-gnu` (ubuntu-22.04 + `cross`). Install cross via `taiki-e/install-action@cross` (not `cargo install cross`). Steps: checkout, `dtolnay/rust-toolchain@stable`, install cross if needed, `cargo build --release --target <target>`, strip binary, upload artifact. Final job: create GitHub release with `softprops/action-gh-release@v2` and attach all artifacts. **Note: use ubuntu-22.04 specifically — Tauri v2 desktop app (v2) requires `libwebkit2gtk-4.1` which is not available on ubuntu-20.04.**
 
 - [ ] **10.2 [SETUP]** Push a `v0.1.0` tag to trigger the release workflow: `git tag v0.1.0 && git push origin v0.1.0`. Monitor the Actions workflow. Once release exists, note the download URLs for each binary.
 
 - [ ] **10.3 [SETUP]** Create Homebrew tap formula. If `github.com/ez/homebrew-tap` doesn't exist yet, create the repo via `gh repo create ez/homebrew-tap --public`. Write `Formula/ezpdf.rb` with `url`, `sha256`, `version` for each platform. Install man page via `man1.install`. Install shell completions. Test locally: `brew install --formula ./Formula/ezpdf.rb`.
 
-- [ ] **10.4 [SETUP]** Publish to crates.io: ensure `ezpdf-core/Cargo.toml` and `ezpdf-cli/Cargo.toml` have `description`, `repository`, `keywords`, `categories`. Run `cargo publish -p ezpdf-core`, then `cargo publish -p ezpdf-cli`.
+- [x] **10.4 [SETUP]** Publish to crates.io: ensure `ezpdf-core/Cargo.toml` and `ezpdf-cli/Cargo.toml` have `description`, `repository`, `keywords`, `categories`. Run `cargo publish -p ezpdf-core`, then `cargo publish -p ezpdf-cli`.
 
-- [ ] **10.5 [SETUP]** Update `README.md` with: installation (Homebrew + cargo install), full usage examples for all 5 commands, link to man page, link to GitHub releases.
+- [x] **10.5 [SETUP]** Update `README.md` with: installation (Homebrew + cargo install), full usage examples for all 5 commands, link to man page, link to GitHub releases.
 
-- [ ] **10.6 [REVIEW]** End-to-end install test: `brew install ez/tap/ezpdf`, run all 5 commands with real PDFs, verify correct output. Run `cargo install ezpdf` in a clean environment. Update `progress.md`. **v1.0.0 is RELEASED.**
+- [x] **10.6 [REVIEW]** End-to-end install test: `brew install ez/tap/ezpdf`, run all 5 commands with real PDFs, verify correct output. Run `cargo install ezpdf` in a clean environment. Update `progress.md`. **v1.0.0 is RELEASED.**
 
 ---
 
