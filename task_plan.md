@@ -9,10 +9,10 @@
 
 ### Definition of Done
 
-- [ ] `cargo build --workspace` succeeds with zero warnings
-- [ ] `cargo test --workspace` passes (even with 0 tests)
-- [ ] `cargo clippy --workspace -- -D warnings` passes
-- [ ] `cargo fmt --check` passes
+- [x] `cargo build --workspace` succeeds with zero warnings
+- [x] `cargo test --workspace` passes (even with 0 tests)
+- [x] `cargo clippy --workspace -- -D warnings` passes
+- [x] `cargo fmt --check` passes
 - [ ] GitHub Actions CI runs on push (ubuntu-latest + macos-latest)
 
 > [!tip] Skills for this phase
@@ -20,13 +20,13 @@
 
 ### Tasks
 
-- [ ] **1.1 [SETUP]** Initialize git repo, create Cargo workspace with three crate stubs: `ezpdf-core` (lib), `ezpdf-cli` (bin), `ezpdf-app` (empty placeholder). Use workspace-level `Cargo.toml` with `resolver = "2"` and shared `[workspace.dependencies]` for `lopdf = "0.31"`, `thiserror = "2"`, `anyhow = "1"`, `clap = { version = "4", features = ["derive", "env"] }`, `clap_complete = "4"`, `clap_mangen = "0.2"`, `indicatif = "0.17"`, `rayon = "1"`, `criterion = { version = "0.5", features = ["html_reports"] }`. `ezpdf-cli/src/main.rs` prints `"ezpdf v0.1.0"` and exits.
+- [x] **1.1 [SETUP]** Initialize git repo, create Cargo workspace with three crate stubs: `ezpdf-core` (lib), `ezpdf-cli` (bin), `ezpdf-app` (empty placeholder). Use workspace-level `Cargo.toml` with `resolver = "2"` and shared `[workspace.dependencies]` for `lopdf = "0.31"`, `thiserror = "2"`, `anyhow = "1"`, `clap = { version = "4", features = ["derive", "env"] }`, `clap_complete = "4"`, `clap_mangen = "0.2"`, `indicatif = "0.17"`, `rayon = "1"`, `criterion = { version = "0.5", features = ["html_reports"] }`. `ezpdf-cli/src/main.rs` prints `"ezpdf v0.1.0"` and exits.
 
-- [ ] **1.2 [SETUP]** Create `.github/workflows/ci.yml`: runs `cargo test --workspace`, `cargo clippy --workspace -- -D warnings`, `cargo fmt --check` on both `ubuntu-latest` and `macos-latest`. Use `dtolnay/rust-toolchain@stable` and `Swatinem/rust-cache@v2`.
+- [x] **1.2 [SETUP]** Create `.github/workflows/ci.yml`: runs `cargo test --workspace`, `cargo clippy --workspace -- -D warnings`, `cargo fmt --check` on both `ubuntu-latest` and `macos-latest`. Use `dtolnay/rust-toolchain@stable` and `Swatinem/rust-cache@v2`.
 
-- [ ] **1.3 [SETUP]** Add `rustfmt.toml` (edition = "2021", max_width = 100), `clippy.toml` (msrv = "1.75"), `.gitignore` (Rust standard), `LICENSE` (MIT, author = "EZ"), `README.md` skeleton (name, one-line description, install + usage TBD), `CHANGELOG.md` (`[Unreleased]` section only).
+- [x] **1.3 [SETUP]** Add `rustfmt.toml` (edition = "2021", max_width = 100), `clippy.toml` (msrv = "1.75"), `.gitignore` (Rust standard), `LICENSE` (MIT, author = "EZ"), `README.md` skeleton (name, one-line description, install + usage TBD), `CHANGELOG.md` (`[Unreleased]` section only).
 
-- [ ] **1.4 [REVIEW]** Run `cargo build --workspace && cargo clippy --workspace -- -D warnings && cargo fmt --check`. All must pass. Verify CI yaml is syntactically valid (`cat .github/workflows/ci.yml`). Check all Phase 1 DoD boxes. Commit all files. Update `progress.md`.
+- [x] **1.4 [REVIEW]** Run `cargo build --workspace && cargo clippy --workspace -- -D warnings && cargo fmt --check`. All must pass. Verify CI yaml is syntactically valid (`cat .github/workflows/ci.yml`). Check all Phase 1 DoD boxes. Commit all files. Update `progress.md`.
 
 ---
 

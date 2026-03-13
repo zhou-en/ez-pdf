@@ -1,0 +1,25 @@
+[package]
+name = "ezpdf-cli"
+version = "0.1.0"
+edition = "2021"
+description = "Fast lossless PDF manipulation CLI tool"
+license = "MIT"
+repository = "https://github.com/zhou-en/ez-pdf"
+keywords = ["pdf", "merge", "split", "rotate", "cli"]
+categories = ["command-line-utilities", "multimedia"]
+
+[[bin]]
+name = "ezpdf"
+path = "src/main.rs"
+
+[dependencies]
+ezpdf-core = { path = "../ezpdf-core" }
+clap = { workspace = true }
+clap_complete = { workspace = true }
+clap_mangen = { workspace = true }
+indicatif = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+assert_cmd = "2"
+tempfile = "3"

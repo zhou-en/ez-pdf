@@ -1,0 +1,18 @@
+[package]
+name = "ezpdf-core"
+version = "0.1.0"
+edition = "2021"
+description = "Core PDF manipulation library for ezpdf"
+license = "MIT"
+repository = "https://github.com/zhou-en/ez-pdf"
+keywords = ["pdf", "merge", "split", "rotate", "cli"]
+categories = ["command-line-utilities", "multimedia"]
+
+[dependencies]
+lopdf = { workspace = true }
+thiserror = { workspace = true }
+rayon = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }
+tempfile = "3"

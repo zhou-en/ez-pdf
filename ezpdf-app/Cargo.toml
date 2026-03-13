@@ -1,0 +1,8 @@
+[package]
+name = "ezpdf-app"
+version = "0.1.0"
+edition = "2021"
+description = "Desktop app placeholder for ezpdf (Tauri v2 + Svelte — v2)"
+license = "MIT"
+
+[dependencies]
