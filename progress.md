@@ -117,3 +117,19 @@
 
 **Deviations / blockers found:**
 - qpdf not available on dev machine; encrypted fixture created via lopdf stub (/Encrypt in trailer)
+
+## 2026-03-12 — Phase 9 complete: Performance & Benchmarks
+
+**Completed tasks:**
+- 9.1 [SETUP] criterion benchmarks for merge, split_each, remove, rotate; baseline recorded
+- 9.2 [SETUP] rayon parallel file loading in merge (par_iter)
+- 9.3 [REVIEW] baseline.md committed, all tests pass
+
+**Benchmarks (Apple M3, release build):**
+- merge 5×10-page: ~9.8 ms (parallel)
+- split_each 50-page: ~333 ms (I/O bound)
+- remove 25/50 pages: ~8.1 ms
+- rotate 50 pages: ~8.0 ms
+
+**Deviations / blockers found:**
+- none

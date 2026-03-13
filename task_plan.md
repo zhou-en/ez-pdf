@@ -238,11 +238,11 @@
 
 ### Tasks
 
-- [ ] **9.1 [SETUP]** Create `ezpdf-core/benches/operations.rs` using `criterion`. Write benchmarks for: `merge` (5 × 10-page PDFs), `split_each` (50-page PDF), `remove` (remove half of 50-page PDF), `rotate` (all pages of 50-page PDF). Add large fixtures generation helper. Run `cargo bench -- --save-baseline baseline`. Commit benchmark results.
+- [x] **9.1 [SETUP]** Create `ezpdf-core/benches/operations.rs` using `criterion`. Write benchmarks for: `merge` (5 × 10-page PDFs), `split_each` (50-page PDF), `remove` (remove half of 50-page PDF), `rotate` (all pages of 50-page PDF). Add large fixtures generation helper. Run `cargo bench -- --save-baseline baseline`. Commit benchmark results.
 
-- [ ] **9.2 [SETUP]** Add `rayon` to `ezpdf-core` dependencies. Implement parallel file loading in `merge.rs`: load and parse all input `Document`s in parallel using `rayon::iter`, then combine sequentially. Run `cargo bench -- --baseline baseline` to verify merge is not slower (should be faster for ≥3 files).
+- [x] **9.2 [SETUP]** Add `rayon` to `ezpdf-core` dependencies. Implement parallel file loading in `merge.rs`: load and parse all input `Document`s in parallel using `rayon::iter`, then combine sequentially. Run `cargo bench -- --baseline baseline` to verify merge is not slower (should be faster for ≥3 files).
 
-- [ ] **9.3 [REVIEW]** Copy benchmark output to `docs/benchmarks/baseline.md`. Run `cargo test --workspace` — no regressions. Commit. Update `progress.md`.
+- [x] **9.3 [REVIEW]** Copy benchmark output to `docs/benchmarks/baseline.md`. Run `cargo test --workspace` — no regressions. Commit. Update `progress.md`.
 
 ---
 

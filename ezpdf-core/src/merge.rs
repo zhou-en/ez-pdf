@@ -1,12 +1,13 @@
 use std::path::Path;
 
 use lopdf::{Dictionary, Document, Object};
+use rayon::prelude::*;
 
 use crate::error::EzPdfError;
 
 pub fn merge(inputs: &[&Path], output: &Path) -> Result<(), EzPdfError> {
     let docs: Vec<Document> = inputs
-        .iter()
+        .par_iter()
         .map(|p| load_doc(p))
         .collect::<Result<_, _>>()?;
 
