@@ -1,7 +1,78 @@
 use crate::error::EzPdfError;
 
-pub fn parse(_input: &str, _page_count: u32) -> Result<Vec<u32>, EzPdfError> {
-    unimplemented!()
+pub fn parse(input: &str, page_count: u32) -> Result<Vec<u32>, EzPdfError> {
+    if input.is_empty() {
+        return Err(EzPdfError::InvalidSyntax {
+            input: input.to_string(),
+            hint: "expected a page number or range".to_string(),
+        });
+    }
+
+    let mut pages = Vec::new();
+    for segment in input.split(',') {
+        let segment = segment.trim();
+        if segment.ends_with('-') {
+            // Open-ended range: "N-" means N to last page
+            let start_str = &segment[..segment.len() - 1];
+            let start = parse_page_number(start_str, input)?;
+            if start > page_count {
+                return Err(EzPdfError::PageOutOfRange {
+                    page: start,
+                    total: page_count,
+                });
+            }
+            for p in start..=page_count {
+                pages.push(p);
+            }
+        } else if let Some(dash_pos) = segment.find('-') {
+            // Explicit range: "N-M"
+            let start_str = &segment[..dash_pos];
+            let end_str = &segment[dash_pos + 1..];
+            let start = parse_page_number(start_str, input)?;
+            let end = parse_page_number(end_str, input)?;
+            if start > end {
+                return Err(EzPdfError::InvalidSyntax {
+                    input: input.to_string(),
+                    hint: format!("range start {start} is greater than end {end}"),
+                });
+            }
+            if end > page_count {
+                return Err(EzPdfError::PageOutOfRange {
+                    page: end,
+                    total: page_count,
+                });
+            }
+            for p in start..=end {
+                pages.push(p);
+            }
+        } else {
+            // Single page
+            let page = parse_page_number(segment, input)?;
+            if page > page_count {
+                return Err(EzPdfError::PageOutOfRange {
+                    page,
+                    total: page_count,
+                });
+            }
+            pages.push(page);
+        }
+    }
+
+    Ok(pages)
+}
+
+fn parse_page_number(s: &str, original_input: &str) -> Result<u32, EzPdfError> {
+    match s.trim().parse::<u32>() {
+        Ok(0) => Err(EzPdfError::InvalidSyntax {
+            input: original_input.to_string(),
+            hint: "page numbers are 1-indexed; 0 is not valid".to_string(),
+        }),
+        Ok(n) => Ok(n),
+        Err(_) => Err(EzPdfError::InvalidSyntax {
+            input: original_input.to_string(),
+            hint: format!("'{s}' is not a valid page number"),
+        }),
+    }
 }
 
 #[cfg(test)]
