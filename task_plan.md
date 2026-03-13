@@ -57,28 +57,28 @@
 
 ### Definition of Done
 
-- [ ] `cargo test -p ezpdf-core merge` passes
-- [ ] `cargo test -p ezpdf-cli` passes (CLI integration tests)
-- [ ] Manual demo: `cargo run -p ezpdf-cli -- merge a.pdf b.pdf -o /tmp/out.pdf` produces a valid PDF with `a_pages + b_pages` pages
+- [x] `cargo test -p ezpdf-core merge` passes
+- [x] `cargo test -p ezpdf-cli` passes (CLI integration tests)
+- [x] Manual demo: `cargo run -p ezpdf-cli -- merge a.pdf b.pdf -o /tmp/out.pdf` produces a valid PDF with `a_pages + b_pages` pages
 
 > [!tip] Skills for this phase
 > - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
 
 ### Tasks
 
-- [ ] **3.1 [SETUP]** Create PDF test fixture generator: `ezpdf-core/tests/common/mod.rs` with `pub fn create_test_pdf(page_count: u32, label: &str) -> Vec<u8>` that uses `lopdf` to create a minimal valid PDF with the given number of blank pages. Create fixture files: `ezpdf-core/tests/fixtures/3page.pdf` and `ezpdf-core/tests/fixtures/5page.pdf` by running the generator (write a small `build.rs` or use `cargo test -- --ignored` to generate once).
+- [x] **3.1 [SETUP]** Create PDF test fixture generator: `ezpdf-core/tests/common/mod.rs` with `pub fn create_test_pdf(page_count: u32, label: &str) -> Vec<u8>` that uses `lopdf` to create a minimal valid PDF with the given number of blank pages. Create fixture files: `ezpdf-core/tests/fixtures/3page.pdf` and `ezpdf-core/tests/fixtures/5page.pdf` by running the generator (write a small `build.rs` or use `cargo test -- --ignored` to generate once).
 
-- [ ] **3.2 [RED]** Write failing tests for `ezpdf_core::merge(inputs: &[&std::path::Path], output: &std::path::Path) -> Result<(), EzPdfError>`. Tests: merge 2 PDFs → output page count = sum of inputs; merge 3 PDFs → correct total; first input not found → `Io` error with the missing path; output to non-existent directory → `Io` error; encrypted PDF input → `EzPdfError::EncryptedPdf`. Use `tempfile` crate for output paths. Run `cargo test -p ezpdf-core` — new tests must **FAIL**.
+- [x] **3.2 [RED]** Write failing tests for `ezpdf_core::merge(inputs: &[&std::path::Path], output: &std::path::Path) -> Result<(), EzPdfError>`. Tests: merge 2 PDFs → output page count = sum of inputs; merge 3 PDFs → correct total; first input not found → `Io` error with the missing path; output to non-existent directory → `Io` error; encrypted PDF input → `EzPdfError::EncryptedPdf`. Use `tempfile` crate for output paths. Run `cargo test -p ezpdf-core` — new tests must **FAIL**.
 
-- [ ] **3.3 [GREEN]** Create `ezpdf-core/src/merge.rs`. Add `pub fn merge(inputs: &[&std::path::Path], output: &std::path::Path) -> Result<(), EzPdfError>` using `lopdf` to copy pages from each input document into a new target document, remapping object IDs. Detect encrypted PDFs via `lopdf::Document::load` error or `doc.is_encrypted()`. Export from `lib.rs`. Run `cargo test -p ezpdf-core` — all tests must **PASS**.
+- [x] **3.3 [GREEN]** Create `ezpdf-core/src/merge.rs`. Add `pub fn merge(inputs: &[&std::path::Path], output: &std::path::Path) -> Result<(), EzPdfError>` using `lopdf` to copy pages from each input document into a new target document, remapping object IDs. Detect encrypted PDFs via `lopdf::Document::load` error or `doc.is_encrypted()`. Export from `lib.rs`. Run `cargo test -p ezpdf-core` — all tests must **PASS**.
 
-- [ ] **3.4 [RED]** Write failing CLI integration test for `ezpdf merge` subcommand. Use `assert_cmd` crate: run `ezpdf merge fixture_a.pdf fixture_b.pdf -o /tmp/out.pdf`, assert exit code 0 and output contains "Merged". Test error: `ezpdf merge nonexistent.pdf -o /tmp/out.pdf` exits with code 1 and stderr contains "Error:". Run tests — must **FAIL** (no subcommand implemented yet).
+- [x] **3.4 [RED]** Write failing CLI integration test for `ezpdf merge` subcommand. Use `assert_cmd` crate: run `ezpdf merge fixture_a.pdf fixture_b.pdf -o /tmp/out.pdf`, assert exit code 0 and output contains "Merged". Test error: `ezpdf merge nonexistent.pdf -o /tmp/out.pdf` exits with code 1 and stderr contains "Error:". Run tests — must **FAIL** (no subcommand implemented yet).
 
-- [ ] **3.5 [GREEN]** Create `ezpdf-cli/src/commands/merge.rs` with clap derive struct `MergeArgs { files: Vec<PathBuf>, output: PathBuf, verbose: bool }`. Wire it into `ezpdf-cli/src/main.rs` as a subcommand. Add `assert_cmd` and `tempfile` to `ezpdf-cli/Cargo.toml` dev-dependencies. Run all tests — must **PASS**.
+- [x] **3.5 [GREEN]** Create `ezpdf-cli/src/commands/merge.rs` with clap derive struct `MergeArgs { files: Vec<PathBuf>, output: PathBuf, verbose: bool }`. Wire it into `ezpdf-cli/src/main.rs` as a subcommand. Add `assert_cmd` and `tempfile` to `ezpdf-cli/Cargo.toml` dev-dependencies. Run all tests — must **PASS**.
 
-- [ ] **3.6 [REFACTOR]** Extract a common `print_success(msg: &str, quiet: bool)` helper in CLI. Add `--quiet` global flag to suppress output. Run all tests still pass.
+- [x] **3.6 [REFACTOR]** Extract a common `print_success(msg: &str, quiet: bool)` helper in CLI. Add `--quiet` global flag to suppress output. Run all tests still pass.
 
-- [ ] **3.7 [REVIEW]** Run `cargo test --workspace`. Run manual demo. Check Phase 3 DoD. Commit. Update `progress.md`.
+- [x] **3.7 [REVIEW]** Run `cargo test --workspace`. Run manual demo. Check Phase 3 DoD. Commit. Update `progress.md`.
 
 ---
 

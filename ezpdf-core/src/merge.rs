@@ -90,9 +90,6 @@ fn load_doc(path: &Path) -> Result<Document, EzPdfError> {
     Document::load(path).map_err(|e| match e {
         lopdf::Error::IO(io_err) => EzPdfError::Io(io_err),
         lopdf::Error::Decryption(_) => EzPdfError::EncryptedPdf,
-        other => EzPdfError::Io(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            other.to_string(),
-        )),
+        other => EzPdfError::Io(std::io::Error::other(other.to_string())),
     })
 }

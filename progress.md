@@ -25,3 +25,19 @@
 
 **Deviations / blockers found:**
 - none
+
+## 2026-03-12 — Phase 3 complete: Merge Command
+
+**Completed tasks:**
+- 3.1 [SETUP] Fixture generator (create_test_pdf), 3page.pdf + 5page.pdf fixtures committed
+- 3.2 [RED] 4 failing tests for merge (page sum, 3-way merge, missing input, bad output dir)
+- 3.3 [GREEN] merge() impl: renumbers objects per doc, builds fresh /Pages tree, save_to()
+- 3.4 [RED] 2 failing CLI tests (merge exits 0 + "Merged", error exits 1 + "Error:")
+- 3.5 [GREEN] ezpdf merge subcommand wired with MergeArgs, print_success helper
+- 3.6 [REFACTOR] clippy clean (io_other_error), quiet flag, output module extracted
+- 3.7 [REVIEW] 23 tests pass, manual demo ✓
+
+**Tests passing:** 23
+
+**Deviations / blockers found:**
+- encrypted PDF test deferred to Phase 8 (needs qpdf fixture, fully covered there)
