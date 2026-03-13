@@ -86,3 +86,18 @@
 
 **Deviations / blockers found:**
 - none
+
+## 2026-03-12 — Phase 7 complete: Reorder Command
+
+**Completed tasks:**
+- 7.1 [RED] 5 failing tests for reorder (page order change, round-trip, missing, duplicate, out-of-range)
+- 7.2 [GREEN] reorder() + parse_order() with full validation; clippy::manual_contains fixed
+- 7.3 [RED] 5 failing CLI tests for `ezpdf reorder`
+- 7.4 [GREEN] ezpdf reorder subcommand wired with ReorderArgs
+- 7.5 [REFACTOR] fmt + clippy clean; error messages include page details
+- 7.6 [REVIEW] all tests pass, manual round-trip demo ✓
+
+**Tests passing:** 56
+
+**Deviations / blockers found:**
+- none

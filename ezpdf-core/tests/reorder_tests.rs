@@ -27,11 +27,7 @@ fn get_kids_order(path: &Path) -> Vec<lopdf::ObjectId> {
     let doc = Document::load(path).expect("load PDF");
     let catalog = doc.catalog().expect("catalog");
     let pages_id = catalog.get(b"Pages").unwrap().as_reference().unwrap();
-    let pages = doc
-        .get_object(pages_id)
-        .unwrap()
-        .as_dict()
-        .unwrap();
+    let pages = doc.get_object(pages_id).unwrap().as_dict().unwrap();
     pages
         .get(b"Kids")
         .unwrap()
@@ -53,9 +49,18 @@ fn reorder_3_page_changes_kids_order() {
     let reordered_kids = get_kids_order(out.path());
 
     // The Kids array should now be [page3, page1, page2] from the original IDs
-    assert_eq!(reordered_kids[0], original_kids[2], "first kid should be original page 3");
-    assert_eq!(reordered_kids[1], original_kids[0], "second kid should be original page 1");
-    assert_eq!(reordered_kids[2], original_kids[1], "third kid should be original page 2");
+    assert_eq!(
+        reordered_kids[0], original_kids[2],
+        "first kid should be original page 3"
+    );
+    assert_eq!(
+        reordered_kids[1], original_kids[0],
+        "second kid should be original page 1"
+    );
+    assert_eq!(
+        reordered_kids[2], original_kids[1],
+        "third kid should be original page 2"
+    );
 }
 
 #[test]
@@ -63,14 +68,15 @@ fn reorder_round_trip_restores_original_order() {
     let src = labeled_3page_pdf();
     let original_kids = get_kids_order(src.path());
 
+    // "3,1,2" → puts [p3, p1, p2]; inverse is "2,3,1" → puts [p1, p2, p3]
     let mid = NamedTempFile::new().unwrap();
-    reorder(src.path(), "2,1", mid.path()).unwrap();
+    reorder(src.path(), "3,1,2", mid.path()).unwrap();
 
     let out = NamedTempFile::new().unwrap();
-    reorder(mid.path(), "2,1", out.path()).unwrap();
+    reorder(mid.path(), "2,3,1", out.path()).unwrap();
 
     let final_kids = get_kids_order(out.path());
-    // After two "2,1" reorders, order should be restored
+    // After applying inverse, order should be restored
     assert_eq!(final_kids, original_kids);
 }
 

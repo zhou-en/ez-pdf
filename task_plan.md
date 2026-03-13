@@ -167,26 +167,26 @@
 
 ### Definition of Done
 
-- [ ] `cargo test -p ezpdf-core reorder` passes
-- [ ] Binary round-trip test: reorder then reorder back → identical to original
-- [ ] Manual demo: reorder pages, open in Preview, verify order
+- [x] `cargo test -p ezpdf-core reorder` passes
+- [x] Binary round-trip test: reorder then reorder back → identical to original
+- [x] Manual demo: reorder pages, open in Preview, verify order
 
 > [!tip] Skills for this phase
 > - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
 
 ### Tasks
 
-- [ ] **7.1 [RED]** Write failing tests for `ezpdf_core::reorder(input: &Path, order: &str, output: &Path) -> Result<(), EzPdfError>`. Tests: reorder `"3,1,2"` on 3-page PDF → page order changes correctly; round-trip `"2,1"` then `"2,1"` → same as original; missing page → `EzPdfError`; duplicate page → `EzPdfError`; order longer than page count → `EzPdfError`. Run — must **FAIL**.
+- [x] **7.1 [RED]** Write failing tests for `ezpdf_core::reorder(input: &Path, order: &str, output: &Path) -> Result<(), EzPdfError>`. Tests: reorder `"3,1,2"` on 3-page PDF → page order changes correctly; round-trip `"2,1"` then `"2,1"` → same as original; missing page → `EzPdfError`; duplicate page → `EzPdfError`; order longer than page count → `EzPdfError`. Run — must **FAIL**.
 
-- [ ] **7.2 [GREEN]** Create `ezpdf-core/src/reorder.rs`. Parse the order string, get the root `/Pages` dictionary via `doc.get_pages_mut()` or traverse `doc.catalog()`, reorder the `/Kids` array to reflect the new order, and update the `/Count` integer to match. **Gotcha: if `/Count` is wrong or any page's `/Parent` ref is stale after reordering, lopdf will produce a structurally invalid PDF — verify the page tree is consistent before saving.** All tests must **PASS**.
+- [x] **7.2 [GREEN]** Create `ezpdf-core/src/reorder.rs`. Parse the order string, get the root `/Pages` dictionary via `doc.get_pages_mut()` or traverse `doc.catalog()`, reorder the `/Kids` array to reflect the new order, and update the `/Count` integer to match. **Gotcha: if `/Count` is wrong or any page's `/Parent` ref is stale after reordering, lopdf will produce a structurally invalid PDF — verify the page tree is consistent before saving.** All tests must **PASS**.
 
-- [ ] **7.3 [RED]** Write failing CLI tests. Run — must **FAIL**.
+- [x] **7.3 [RED]** Write failing CLI tests. Run — must **FAIL**.
 
-- [ ] **7.4 [GREEN]** Create `ezpdf-cli/src/commands/reorder.rs`. All tests must **PASS**.
+- [x] **7.4 [GREEN]** Create `ezpdf-cli/src/commands/reorder.rs`. All tests must **PASS**.
 
-- [ ] **7.5 [REFACTOR]** Ensure `reorder` validation error messages explicitly name the missing/duplicate page.
+- [x] **7.5 [REFACTOR]** Ensure `reorder` validation error messages explicitly name the missing/duplicate page.
 
-- [ ] **7.6 [REVIEW]** Run `cargo test --workspace`. Manual round-trip demo. Check DoD. Commit. Update `progress.md`.
+- [x] **7.6 [REVIEW]** Run `cargo test --workspace`. Manual round-trip demo. Check DoD. Commit. Update `progress.md`.
 
 > **🏁 After 7.6: all 5 core operations complete. ezpdf works end-to-end.**
 

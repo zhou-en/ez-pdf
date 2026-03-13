@@ -4,6 +4,7 @@ mod output;
 use clap::{Parser, Subcommand};
 use commands::merge::MergeArgs;
 use commands::remove::RemoveArgs;
+use commands::reorder::ReorderArgs;
 use commands::rotate::RotateArgs;
 use commands::split::SplitArgs;
 
@@ -20,6 +21,8 @@ enum Commands {
     Merge(MergeArgs),
     /// Remove specific pages from a PDF
     Remove(RemoveArgs),
+    /// Reorder pages in a PDF
+    Reorder(ReorderArgs),
     /// Rotate all or specific pages
     Rotate(RotateArgs),
     /// Extract a page range or burst into individual pages
@@ -32,6 +35,7 @@ fn main() {
     let result = match cli.command {
         Commands::Merge(args) => commands::merge::run(args),
         Commands::Remove(args) => commands::remove::run(args),
+        Commands::Reorder(args) => commands::reorder::run(args),
         Commands::Rotate(args) => commands::rotate::run(args),
         Commands::Split(args) => commands::split::run(args),
     };
