@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/Users/enzhou/Projects/ez-pdf/**)",
+      "Write(/Users/enzhou/Projects/ez-pdf/**)",
+      "Edit(/Users/enzhou/Projects/ez-pdf/**)",
+      "Glob(/Users/enzhou/Projects/ez-pdf/**)",
+      "Read(/Users/enzhou/Projects/docs/**)",
+      "Read(/Users/enzhou/Library/CloudStorage/Dropbox/ObsidianVault/**)",
+      "Bash(cargo *)",
+      "Bash(git *)",
+      "Bash(gh *)",
+      "Bash(rustfmt *)",
+      "Bash(rustup *)",
+      "Bash(cross *)",
+      "Bash(brew *)",
+      "Bash(qpdf *)",
+      "Bash(open *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cat *)",
+      "Bash(echo *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(rm *)",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(tail *)",
+      "Bash(head *)",
+      "Bash(wc *)",
+      "Bash(date *)"
+    ],
+    "additionalDirectories": [
+      "/Users/enzhou/Projects/ez-pdf/",
+      "/Users/enzhou/Projects/docs/"
+    ]
+  }
+}
