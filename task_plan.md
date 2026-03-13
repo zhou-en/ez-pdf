@@ -13,7 +13,7 @@
 - [x] `cargo test --workspace` passes (even with 0 tests)
 - [x] `cargo clippy --workspace -- -D warnings` passes
 - [x] `cargo fmt --check` passes
-- [ ] GitHub Actions CI runs on push (ubuntu-latest + macos-latest)
+- [x] GitHub Actions CI runs on push (ubuntu-latest + macos-latest)
 
 > [!tip] Skills for this phase
 > No TDD skill needed — these are infrastructure tasks
@@ -228,9 +228,9 @@
 
 ### Definition of Done
 
-- [ ] `cargo bench` runs without errors
-- [ ] Benchmark baseline committed to `docs/benchmarks/baseline.md`
-- [ ] Parallel merge shows measurable speedup for ≥3 inputs vs sequential
+- [x] `cargo bench` runs without errors
+- [x] Benchmark baseline committed to `docs/benchmarks/baseline.md`
+- [x] Parallel merge shows measurable speedup for ≥3 inputs vs sequential
 
 > [!tip] Skills for this phase
 > - No TDD skill needed — benchmarks are additive, not feature development
@@ -250,9 +250,9 @@
 
 ### Definition of Done
 
-- [ ] `brew install ez/tap/ezpdf` works on macOS Apple Silicon
-- [ ] GitHub Release v0.1.0 has 4 binary artifacts
-- [ ] `cargo install ezpdf` installs the binary
+- [x] `brew install ez/tap/ezpdf` works on macOS Apple Silicon
+- [x] GitHub Release v0.1.0 has 4 binary artifacts
+- [x] `cargo install ezpdf` installs the binary
 
 > [!tip] Skills for this phase
 > - No TDD skill needed — infrastructure/release tasks
@@ -261,9 +261,9 @@
 
 - [x] **10.1 [SETUP]** Create `.github/workflows/release.yml`. Matrix: `aarch64-apple-darwin` (macos-14), `x86_64-apple-darwin` (macos-13), `x86_64-unknown-linux-gnu` (ubuntu-22.04), `aarch64-unknown-linux-gnu` (ubuntu-22.04 + `cross`). Install cross via `taiki-e/install-action@cross` (not `cargo install cross`). Steps: checkout, `dtolnay/rust-toolchain@stable`, install cross if needed, `cargo build --release --target <target>`, strip binary, upload artifact. Final job: create GitHub release with `softprops/action-gh-release@v2` and attach all artifacts. **Note: use ubuntu-22.04 specifically — Tauri v2 desktop app (v2) requires `libwebkit2gtk-4.1` which is not available on ubuntu-20.04.**
 
-- [ ] **10.2 [SETUP]** Push a `v0.1.0` tag to trigger the release workflow: `git tag v0.1.0 && git push origin v0.1.0`. Monitor the Actions workflow. Once release exists, note the download URLs for each binary.
+- [x] **10.2 [SETUP]** Push a `v0.1.0` tag to trigger the release workflow: `git tag v0.1.0 && git push origin v0.1.0`. Monitor the Actions workflow. Once release exists, note the download URLs for each binary.
 
-- [ ] **10.3 [SETUP]** Create Homebrew tap formula. If `github.com/ez/homebrew-tap` doesn't exist yet, create the repo via `gh repo create ez/homebrew-tap --public`. Write `Formula/ezpdf.rb` with `url`, `sha256`, `version` for each platform. Install man page via `man1.install`. Install shell completions. Test locally: `brew install --formula ./Formula/ezpdf.rb`.
+- [x] **10.3 [SETUP]** Create Homebrew tap formula. If `github.com/ez/homebrew-tap` doesn't exist yet, create the repo via `gh repo create ez/homebrew-tap --public`. Write `Formula/ezpdf.rb` with `url`, `sha256`, `version` for each platform. Install man page via `man1.install`. Install shell completions. Test locally: `brew install --formula ./Formula/ezpdf.rb`.
 
 - [x] **10.4 [SETUP]** Publish to crates.io: ensure `ezpdf-core/Cargo.toml` and `ezpdf-cli/Cargo.toml` have `description`, `repository`, `keywords`, `categories`. Run `cargo publish -p ezpdf-core`, then `cargo publish -p ezpdf-cli`.
 
