@@ -3,6 +3,7 @@ mod output;
 
 use clap::{Parser, Subcommand};
 use commands::merge::MergeArgs;
+use commands::remove::RemoveArgs;
 
 #[derive(Parser)]
 #[command(name = "ezpdf", version, about = "Fast lossless PDF manipulation")]
@@ -15,6 +16,8 @@ struct Cli {
 enum Commands {
     /// Merge two or more PDFs into one
     Merge(MergeArgs),
+    /// Remove specific pages from a PDF
+    Remove(RemoveArgs),
 }
 
 fn main() {
@@ -22,6 +25,7 @@ fn main() {
 
     let result = match cli.command {
         Commands::Merge(args) => commands::merge::run(args),
+        Commands::Remove(args) => commands::remove::run(args),
     };
 
     if let Err(e) = result {

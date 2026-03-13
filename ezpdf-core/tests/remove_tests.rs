@@ -12,7 +12,10 @@ fn fixture(name: &str) -> std::path::PathBuf {
 }
 
 fn page_count(path: &Path) -> u32 {
-    Document::load(path).expect("load output PDF").get_pages().len() as u32
+    Document::load(path)
+        .expect("load output PDF")
+        .get_pages()
+        .len() as u32
 }
 
 #[test]

@@ -41,3 +41,18 @@
 
 **Deviations / blockers found:**
 - encrypted PDF test deferred to Phase 8 (needs qpdf fixture, fully covered there)
+
+## 2026-03-12 — Phase 4 complete: Remove Command
+
+**Completed tasks:**
+- 4.1 [RED] 5 failing tests (remove middle, first+last, range, all pages, out-of-range)
+- 4.2 [GREEN] remove() = parse pages_to_remove, compute keep list, rebuild /Pages tree
+- 4.3 [RED] 2 failing CLI tests
+- 4.4 [GREEN] ezpdf remove subcommand wired
+- 4.5 [REFACTOR] fmt + clippy clean, "cannot remove all N pages" msg with count context
+- 4.6 [REVIEW] 30 tests pass, clippy/fmt clean
+
+**Tests passing:** 30
+
+**Deviations / blockers found:**
+- none

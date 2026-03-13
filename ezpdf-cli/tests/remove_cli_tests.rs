@@ -1,4 +1,5 @@
 use assert_cmd::Command;
+use lopdf::Document;
 use std::path::Path;
 use tempfile::NamedTempFile;
 
@@ -10,35 +11,44 @@ fn fixture(name: &str) -> std::path::PathBuf {
         .join(name)
 }
 
+fn page_count(path: &Path) -> u32 {
+    Document::load(path)
+        .expect("load output PDF")
+        .get_pages()
+        .len() as u32
+}
+
 #[test]
-fn merge_two_pdfs_exits_zero_and_prints_merged() {
+fn remove_page_exits_zero_and_prints_removed() {
     let out = NamedTempFile::new().unwrap();
-    let a = fixture("3page.pdf");
-    let b = fixture("5page.pdf");
+    let input = fixture("5page.pdf");
 
     Command::cargo_bin("ezpdf")
         .unwrap()
         .args([
-            "merge",
-            a.to_str().unwrap(),
-            b.to_str().unwrap(),
+            "remove",
+            input.to_str().unwrap(),
+            "3",
             "-o",
             out.path().to_str().unwrap(),
         ])
         .assert()
         .success()
-        .stdout(predicates::str::contains("Merged"));
+        .stdout(predicates::str::contains("Removed"));
+
+    assert_eq!(page_count(out.path()), 4);
 }
 
 #[test]
-fn merge_nonexistent_file_exits_nonzero_with_error() {
+fn remove_nonexistent_file_exits_nonzero_with_error() {
     let out = NamedTempFile::new().unwrap();
 
     Command::cargo_bin("ezpdf")
         .unwrap()
         .args([
-            "merge",
+            "remove",
             "/tmp/does_not_exist_ezpdf.pdf",
+            "1",
             "-o",
             out.path().to_str().unwrap(),
         ])

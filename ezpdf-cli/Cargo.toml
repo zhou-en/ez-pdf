@@ -24,3 +24,4 @@ anyhow = { workspace = true }
 assert_cmd = "2"
 tempfile = "3"
 predicates = "3"
+lopdf = { workspace = true }

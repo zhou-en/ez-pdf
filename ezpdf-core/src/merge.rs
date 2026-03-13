@@ -86,7 +86,7 @@ fn build_merged(mut docs: Vec<Document>) -> Result<Document, EzPdfError> {
     Ok(result)
 }
 
-fn load_doc(path: &Path) -> Result<Document, EzPdfError> {
+pub(crate) fn load_doc(path: &Path) -> Result<Document, EzPdfError> {
     Document::load(path).map_err(|e| match e {
         lopdf::Error::IO(io_err) => EzPdfError::Io(io_err),
         lopdf::Error::Decryption(_) => EzPdfError::EncryptedPdf,

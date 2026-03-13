@@ -78,17 +78,18 @@ mod tests {
     // Helper: assert parse succeeds and returns the expected pages
     fn ok(input: &str, page_count: u32, expected: &[u32]) {
         let result = parse(input, page_count).expect("expected Ok");
-        assert_eq!(result, expected, "input={:?} page_count={}", input, page_count);
+        assert_eq!(
+            result, expected,
+            "input={:?} page_count={}",
+            input, page_count
+        );
     }
 
     // Helper: assert parse returns an InvalidSyntax error
     fn err_syntax(input: &str, page_count: u32) {
         match parse(input, page_count) {
             Err(EzPdfError::InvalidSyntax { .. }) => {}
-            other => panic!(
-                "expected InvalidSyntax for {:?}, got {:?}",
-                input, other
-            ),
+            other => panic!("expected InvalidSyntax for {:?}, got {:?}", input, other),
         }
     }
 
@@ -96,13 +97,14 @@ mod tests {
     fn err_out_of_range(input: &str, page_count: u32, expected_page: u32) {
         match parse(input, page_count) {
             Err(EzPdfError::PageOutOfRange { page, total }) => {
-                assert_eq!(page, expected_page, "wrong out-of-range page for {:?}", input);
+                assert_eq!(
+                    page, expected_page,
+                    "wrong out-of-range page for {:?}",
+                    input
+                );
                 assert_eq!(total, page_count, "wrong total for {:?}", input);
             }
-            other => panic!(
-                "expected PageOutOfRange for {:?}, got {:?}",
-                input, other
-            ),
+            other => panic!("expected PageOutOfRange for {:?}, got {:?}", input, other),
         }
     }
 
@@ -185,7 +187,10 @@ mod tests {
 
     #[test]
     fn out_of_range_display_contains_page_count() {
-        let err = EzPdfError::PageOutOfRange { page: 15, total: 10 };
+        let err = EzPdfError::PageOutOfRange {
+            page: 15,
+            total: 10,
+        };
         let msg = err.to_string();
         assert!(
             msg.contains("10"),
@@ -204,6 +209,9 @@ mod tests {
             hint: "expected a number".to_string(),
         };
         let msg = err.to_string();
-        assert!(msg.contains("abc"), "expected input in error message, got: {msg}");
+        assert!(
+            msg.contains("abc"),
+            "expected input in error message, got: {msg}"
+        );
     }
 }

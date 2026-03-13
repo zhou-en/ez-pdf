@@ -86,26 +86,26 @@
 
 ### Definition of Done
 
-- [ ] `cargo test -p ezpdf-core remove` passes
-- [ ] `cargo test -p ezpdf-cli remove` passes
-- [ ] Manual demo: remove pages from a 10-page PDF, open result, verify correct pages gone
+- [x] `cargo test -p ezpdf-core remove` passes
+- [x] `cargo test -p ezpdf-cli remove` passes
+- [x] Manual demo: remove pages from a 10-page PDF, open result, verify correct pages gone
 
 > [!tip] Skills for this phase
 > - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
 
 ### Tasks
 
-- [ ] **4.1 [RED]** Write failing tests for `ezpdf_core::remove(input: &Path, pages: &str, output: &Path) -> Result<(), EzPdfError>`. Tests: remove middle page from 5-page PDF → output has 4 pages; remove first and last from 10-page PDF → 8 pages; remove all pages → `EzPdfError` (cannot remove all pages); page out of range → `EzPdfError::PageOutOfRange`. Run — must **FAIL**.
+- [x] **4.1 [RED]** Write failing tests for `ezpdf_core::remove(input: &Path, pages: &str, output: &Path) -> Result<(), EzPdfError>`. Tests: remove middle page from 5-page PDF → output has 4 pages; remove first and last from 10-page PDF → 8 pages; remove all pages → `EzPdfError` (cannot remove all pages); page out of range → `EzPdfError::PageOutOfRange`. Run — must **FAIL**.
 
-- [ ] **4.2 [GREEN]** Create `ezpdf-core/src/remove.rs`. Implement by computing "pages to keep" = all pages minus removed pages, then using a split-like approach to copy kept pages to output. Export from `lib.rs`. All tests must **PASS**.
+- [x] **4.2 [GREEN]** Create `ezpdf-core/src/remove.rs`. Implement by computing "pages to keep" = all pages minus removed pages, then using a split-like approach to copy kept pages to output. Export from `lib.rs`. All tests must **PASS**.
 
-- [ ] **4.3 [RED]** Write failing CLI tests for `ezpdf remove input.pdf 3,5 -o output.pdf`. Run — must **FAIL**.
+- [x] **4.3 [RED]** Write failing CLI tests for `ezpdf remove input.pdf 3,5 -o output.pdf`. Run — must **FAIL**.
 
-- [ ] **4.4 [GREEN]** Create `ezpdf-cli/src/commands/remove.rs`. Run all tests — must **PASS**.
+- [x] **4.4 [GREEN]** Create `ezpdf-cli/src/commands/remove.rs`. Run all tests — must **PASS**.
 
-- [ ] **4.5 [REFACTOR]** Review error messages. Ensure "cannot remove all pages" includes page count context. Clippy clean.
+- [x] **4.5 [REFACTOR]** Review error messages. Ensure "cannot remove all pages" includes page count context. Clippy clean.
 
-- [ ] **4.6 [REVIEW]** Run `cargo test --workspace`. Manual demo with 10-page fixture. Check DoD. Commit. Update `progress.md`.
+- [x] **4.6 [REVIEW]** Run `cargo test --workspace`. Manual demo with 10-page fixture. Check DoD. Commit. Update `progress.md`.
 
 ---
 
