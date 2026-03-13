@@ -101,3 +101,19 @@
 
 **Deviations / blockers found:**
 - none
+
+## 2026-03-12 — Phase 8 complete: CLI Polish
+
+**Completed tasks:**
+- 8.1 [RED] 4 failing tests for version, unknown subcommand, zsh/bash completions
+- 8.2 [GREEN] `completions` subcommand via clap_complete, `--version` already built-in
+- 8.3 [SETUP] Progress bar helper (maybe_progress) wired into merge, remove, split-each for PDFs > 20 pages
+- 8.4 [RED] 6 failing tests for encrypted PDF detection (all 5 commands) + missing file path
+- 8.5 [GREEN] `load_doc` adds `is_encrypted()` check + path in IO error messages; encrypted.pdf fixture
+- 8.6 [REFACTOR] fmt + clippy clean, long_about with examples on root command
+- 8.7 [REVIEW] all tests pass, manual demo ✓
+
+**Tests passing:** 66
+
+**Deviations / blockers found:**
+- qpdf not available on dev machine; encrypted fixture created via lopdf stub (/Encrypt in trailer)

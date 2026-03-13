@@ -196,31 +196,31 @@
 
 ### Definition of Done
 
-- [ ] `ezpdf --help` and `ezpdf <cmd> --help` show complete, example-rich help
-- [ ] `ezpdf completions zsh` produces valid zsh completion script
-- [ ] `ezpdf completions bash` and `ezpdf completions fish` work
-- [ ] Progress bar appears for operations on PDFs > 20 pages
-- [ ] Encrypted PDF detection works on all 5 commands
-- [ ] All error messages are user-friendly with recovery hints
+- [x] `ezpdf --help` and `ezpdf <cmd> --help` show complete, example-rich help
+- [x] `ezpdf completions zsh` produces valid zsh completion script
+- [x] `ezpdf completions bash` and `ezpdf completions fish` work
+- [x] Progress bar appears for operations on PDFs > 20 pages
+- [x] Encrypted PDF detection works on all 5 commands
+- [x] All error messages are user-friendly with recovery hints
 
 > [!tip] Skills for this phase
 > - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
 
 ### Tasks
 
-- [ ] **8.1 [RED]** Write failing tests for: `ezpdf completions zsh` exits 0 and stdout is non-empty; `ezpdf completions bash` exits 0; `ezpdf --version` exits 0 and output contains "0.1.0"; `ezpdf nonexistent_command` exits 1 and stderr contains "error:". Run — must **FAIL**.
+- [x] **8.1 [RED]** Write failing tests for: `ezpdf completions zsh` exits 0 and stdout is non-empty; `ezpdf completions bash` exits 0; `ezpdf --version` exits 0 and output contains "0.1.0"; `ezpdf nonexistent_command` exits 1 and stderr contains "error:". Run — must **FAIL**.
 
-- [ ] **8.2 [GREEN]** Add `completions` subcommand to CLI using `clap_complete`. Add `--version` flag. Add man page generation command `ezpdf man` via `clap_mangen`. Wire encrypted-PDF detection into all 5 command handlers (call a shared `check_not_encrypted(path)` helper that returns `EzPdfError::EncryptedPdf` with a `qpdf --decrypt` tip). All tests must **PASS**.
+- [x] **8.2 [GREEN]** Add `completions` subcommand to CLI using `clap_complete`. Add `--version` flag. Add man page generation command `ezpdf man` via `clap_mangen`. Wire encrypted-PDF detection into all 5 command handlers (call a shared `check_not_encrypted(path)` helper that returns `EzPdfError::EncryptedPdf` with a `qpdf --decrypt` tip). All tests must **PASS**.
 
-- [ ] **8.3 [SETUP]** Add progress bar support using `indicatif` to merge, split-each, and remove commands. Threshold: show bar when PDF has > 20 pages. Bar format: `[████░░░░] Processing page 12/50 — merge`. Suppress with `--quiet`. (No unit tests for progress bar rendering — visual verification only.)
+- [x] **8.3 [SETUP]** Add progress bar support using `indicatif` to merge, split-each, and remove commands. Threshold: show bar when PDF has > 20 pages. Bar format: `[████░░░░] Processing page 12/50 — merge`. Suppress with `--quiet`. (No unit tests for progress bar rendering — visual verification only.)
 
-- [ ] **8.4 [RED]** Write tests for all 5 commands that: (a) pass an encrypted PDF fixture → exit 1, stderr contains "password-protected" and "qpdf"; (b) pass a non-existent file → exit 1, stderr contains the file path. Run — must **FAIL**. (Need a minimal encrypted PDF fixture — create using `qpdf --encrypt "" "" 128 -- plain.pdf encrypted.pdf` in test setup, or embed a known-encrypted PDF byte sequence as a fixture.)
+- [x] **8.4 [RED]** Write tests for all 5 commands that: (a) pass an encrypted PDF fixture → exit 1, stderr contains "password-protected" and "qpdf"; (b) pass a non-existent file → exit 1, stderr contains the file path. Run — must **FAIL**. (Need a minimal encrypted PDF fixture — create using `qpdf --encrypt "" "" 128 -- plain.pdf encrypted.pdf` in test setup, or embed a known-encrypted PDF byte sequence as a fixture.)
 
-- [ ] **8.5 [GREEN]** Implement the `check_not_encrypted` helper in `ezpdf-core`. Wire into all command handlers. Update all help strings to include `Examples:` sections. All tests must **PASS**.
+- [x] **8.5 [GREEN]** Implement the `check_not_encrypted` helper in `ezpdf-core`. Wire into all command handlers. Update all help strings to include `Examples:` sections. All tests must **PASS**.
 
-- [ ] **8.6 [REFACTOR]** Audit all `clap` `about`, `long_about`, `help` strings — every flag must have a description. Every subcommand must have 2+ examples in `long_about`. Run clippy clean.
+- [x] **8.6 [REFACTOR]** Audit all `clap` `about`, `long_about`, `help` strings — every flag must have a description. Every subcommand must have 2+ examples in `long_about`. Run clippy clean.
 
-- [ ] **8.7 [REVIEW]** Run `cargo test --workspace`. Run all help commands manually. Pipe completions to a temp file and verify format. Check DoD. Commit. Update `progress.md`.
+- [x] **8.7 [REVIEW]** Run `cargo test --workspace`. Run all help commands manually. Pipe completions to a temp file and verify format. Check DoD. Commit. Update `progress.md`.
 
 ---
 

@@ -2,8 +2,9 @@ use std::path::PathBuf;
 
 use clap::Args;
 use ezpdf_core::{split_each, split_range};
+use lopdf::Document;
 
-use crate::output::print_success;
+use crate::output::{maybe_progress, print_success};
 
 #[derive(Args)]
 pub struct SplitArgs {
@@ -27,8 +28,16 @@ pub struct SplitArgs {
 }
 
 pub fn run(args: SplitArgs) -> anyhow::Result<()> {
+    let page_count = Document::load(&args.input)
+        .map(|d| d.get_pages().len() as u32)
+        .unwrap_or(0);
+
     if args.each {
+        let pb = maybe_progress("split-each", page_count, args.quiet);
         split_each(&args.input, &args.output)?;
+        if let Some(pb) = pb {
+            pb.finish_and_clear();
+        }
         print_success(
             &format!("Split into individual pages → {}", args.output.display()),
             args.quiet,

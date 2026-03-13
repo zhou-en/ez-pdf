@@ -87,9 +87,19 @@ fn build_merged(mut docs: Vec<Document>) -> Result<Document, EzPdfError> {
 }
 
 pub(crate) fn load_doc(path: &Path) -> Result<Document, EzPdfError> {
-    Document::load(path).map_err(|e| match e {
-        lopdf::Error::IO(io_err) => EzPdfError::Io(io_err),
+    let doc = Document::load(path).map_err(|e| match e {
+        lopdf::Error::IO(io_err) => EzPdfError::Io(std::io::Error::new(
+            io_err.kind(),
+            format!("{}: {io_err}", path.display()),
+        )),
         lopdf::Error::Decryption(_) => EzPdfError::EncryptedPdf,
-        other => EzPdfError::Io(std::io::Error::other(other.to_string())),
-    })
+        other => EzPdfError::Io(std::io::Error::other(format!(
+            "{}: {other}",
+            path.display()
+        ))),
+    })?;
+    if doc.is_encrypted() {
+        return Err(EzPdfError::EncryptedPdf);
+    }
+    Ok(doc)
 }
