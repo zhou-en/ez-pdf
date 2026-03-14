@@ -5,6 +5,7 @@ use clap::{Parser, Subcommand};
 use commands::completions::CompletionsArgs;
 use commands::info::InfoArgs;
 use commands::merge::MergeArgs;
+use commands::meta::MetaArgs;
 use commands::remove::RemoveArgs;
 use commands::reorder::ReorderArgs;
 use commands::rotate::RotateArgs;
@@ -28,6 +29,8 @@ enum Commands {
     Completions(CompletionsArgs),
     /// Show page count, dimensions, and metadata of a PDF
     Info(InfoArgs),
+    /// Read or write PDF metadata fields
+    Meta(MetaArgs),
     /// Merge two or more PDFs into one
     Merge(MergeArgs),
     /// Remove specific pages from a PDF
@@ -46,6 +49,7 @@ fn main() {
     let result = match cli.command {
         Commands::Completions(args) => commands::completions::run(args),
         Commands::Info(args) => commands::info::run(args),
+        Commands::Meta(args) => commands::meta::run(args),
         Commands::Merge(args) => commands::merge::run(args),
         Commands::Remove(args) => commands::remove::run(args),
         Commands::Reorder(args) => commands::reorder::run(args),
