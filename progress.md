@@ -153,3 +153,41 @@
 ## EZPDF V1 COMPLETE
 
 All 10 phases done. 66 tests passing. Clippy/fmt clean.
+
+---
+
+## 2026-03-13 — Backlog planning complete: Phases 11–20 added
+
+**Planned phases:**
+- Phase 11: `ezpdf info` command (v1.1)
+- Phase 12: Batch operations `--batch` flag (v1.1)
+- Phase 13: PDF metadata read/write (v1.2)
+- Phase 14: Windows support (v1.2)
+- Phase 15: Encrypted PDF `--password` support (v2)
+- Phase 16: Watermark pages (v2)
+- Phase 17: Bookmarks / outline manipulation (v2)
+- Phase 18: Image extraction (v2)
+- Phase 19: PDF optimization (v2)
+- Phase 20: Desktop app — Tauri v2 + Svelte 5 (v2)
+
+**Tests passing:** 66 (no new tests yet — backlog phases all unchecked)
+
+**Deviations / blockers found:**
+- none
+
+---
+
+## 2026-03-13 — Phase 11 complete: `ezpdf info` Command
+
+**Completed tasks:**
+- 11.1 [RED] failing tests for `info()` and `PdfInfo` struct
+- 11.2 [GREEN] `ezpdf-core/src/info.rs` — page count, dimensions, metadata
+- 11.3 [RED] failing CLI tests for `ezpdf info`
+- 11.4 [GREEN] `ezpdf-cli/src/commands/info.rs` — normal + --json output
+- 11.5 [REFACTOR] paper size labels, --pages flag, serde on PdfInfo
+- 11.6 [REVIEW] all tests pass, clippy clean
+
+**Tests passing:** 73 (7 new)
+
+**Deviations / blockers found:**
+- none

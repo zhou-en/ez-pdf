@@ -12,6 +12,7 @@ categories = ["command-line-utilities", "multimedia"]
 lopdf = { workspace = true }
 thiserror = { workspace = true }
 rayon = { workspace = true }
+serde = { workspace = true }
 
 [dev-dependencies]
 criterion = { workspace = true }

@@ -279,17 +279,400 @@ _None yet. Blockers found during stories will be injected here._
 
 ---
 
-## Backlog (non-v1)
+## Phase 11: `ezpdf info` Command
 
-| ID | Item | Priority | Target |
-|----|------|----------|--------|
-| B1 | Batch operations (`--batch` flag for directory processing) | HIGH | v1.1 |
-| B2 | Encrypted PDF support (`--password` flag) | HIGH | v2 |
-| B3 | `ezpdf-app` desktop app (Tauri v2 + Svelte 5) | HIGH | v2 |
-| B4 | `ezpdf info`: show page count, dimensions, metadata | MEDIUM | v1.1 |
-| B5 | PDF metadata read/write (title, author, keywords) | MEDIUM | v1.2 |
-| B6 | Windows support | MEDIUM | v1.2 |
-| B7 | Extract images from PDF | LOW | v2 |
-| B8 | PDF linearization / web optimization | LOW | v2 |
-| B9 | Watermark pages (text or image) | LOW | v2 |
-| B10 | Bookmarks / outline manipulation | LOW | v2 |
+### Definition of Done
+
+- [x] `cargo test -p ezpdf-core info` passes
+- [x] `cargo test -p ezpdf-cli info` passes
+- [x] `ezpdf info input.pdf` prints page count, per-page dimensions, and document metadata fields
+- [x] `ezpdf info input.pdf --json` outputs valid JSON
+
+> [!tip] Skills for this phase
+> - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
+
+### Tasks
+
+- [x] **11.1 [RED]** Write failing tests for `ezpdf_core::info(input: &Path) -> Result<PdfInfo, EzPdfError>`.
+  Tests: (a) info on 3page.pdf → `page_count == 3`; (b) dimensions vec has 3 entries, each > 0.0;
+  (c) info on nonexistent file → `Io` error; (d) info on encrypted.pdf fixture → `EncryptedPdf` error.
+  Also define `PdfInfo` struct in the test file (it won't exist yet) with fields:
+  `page_count: u32`, `dimensions: Vec<(f64, f64)>`, `title: Option<String>`, `author: Option<String>`,
+  `subject: Option<String>`, `keywords: Option<String>`, `creator: Option<String>`, `producer: Option<String>`.
+  Run `cargo test -p ezpdf-core` — tests must **FAIL**.
+
+- [x] **11.2 [GREEN]** Create `ezpdf-core/src/info.rs`. Define `PdfInfo` struct (derive Debug, PartialEq).
+  Implement `pub fn info(input: &Path) -> Result<PdfInfo, EzPdfError>`.
+  Use `load_doc(input)?` for loading and encrypted detection.
+  Extract page count via `doc.get_pages().len() as u32`.
+  Extract dimensions: iterate `doc.get_pages()` sorted by page number; for each page object id,
+  call `doc.get_object(id)?.as_dict()?`, look for `/MediaBox` array `[x0, y0, x1, y1]` (may be
+  inherited from parent /Pages dict — walk up if absent); compute `width = x1 - x0`, `height = y1 - y0`.
+  Extract metadata: follow `doc.trailer.get(b"Info")` reference to the Info dictionary,
+  read each key as `Option<String>` (handle PDFDocEncoding byte strings and UTF-16BE with BOM `\xFE\xFF`).
+  Export from `lib.rs`. All tests must **PASS**.
+
+- [x] **11.3 [RED]** Write failing CLI tests for `ezpdf info`:
+  (a) `ezpdf info 3page.pdf` exits 0, stdout contains "Pages: 3";
+  (b) `ezpdf info 3page.pdf --json` exits 0, stdout is parseable JSON with `page_count` field;
+  (c) `ezpdf info nonexistent.pdf` exits 1, stderr contains "Error:".
+  Run tests — must **FAIL**.
+
+- [x] **11.4 [GREEN]** Create `ezpdf-cli/src/commands/info.rs` with `InfoArgs { file: PathBuf, json: bool }`.
+  Wire as `ezpdf info` subcommand in `main.rs`. For normal output: print `File: {}`, `Pages: {}`,
+  a dimensions table (Page | Width pt | Height pt), and metadata fields (skip None values).
+  For `--json`: add `serde` feature to `ezpdf-core` (`serde = { version = "1", features = ["derive"] }`)
+  and `serde_json = "1"` to `ezpdf-cli`; derive `Serialize` on `PdfInfo`; serialize and print.
+  All tests must **PASS**.
+
+- [x] **11.5 [REFACTOR]** In normal output mode, detect common paper sizes from dimensions
+  (A4 = 595×842 pt, Letter = 612×792 pt, Legal = 612×1008 pt) within 2 pt tolerance and
+  append the size name in parentheses. Add `--pages` flag to show dimensions for specific pages only
+  (reuse `page_range::parse`). Clippy clean.
+
+- [x] **11.6 [REVIEW]** Run `cargo test --workspace`. Manual demo: `ezpdf info` on a real PDF.
+  Check Phase 11 DoD. Commit `feat: ezpdf info command (Phase 11)`. Update `progress.md`.
+
+---
+
+## Phase 12: Batch Operations
+
+### Definition of Done
+
+- [ ] `--batch` flag works on `rotate`, `remove`, `reorder` (apply operation independently to each PDF in a directory)
+- [ ] `merge --batch DIR/ -o out.pdf` merges all PDFs in a directory into one output file
+- [ ] `split --batch DIR/ -o OUT_DIR/` splits each PDF into its own output subdirectory
+- [ ] Progress bar shown when batch contains > 1 file
+
+> [!tip] Skills for this phase
+> - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
+
+### Tasks
+
+- [ ] **12.1 [RED]** Write failing tests for `ezpdf_core::batch::collect_pdf_inputs(dir: &Path) -> Result<Vec<PathBuf>, EzPdfError>`.
+  Tests: (a) dir with 3 `.pdf` files → returns 3 paths sorted alphabetically;
+  (b) dir with mixed `.pdf` and `.txt` files → only `.pdf` included;
+  (c) nonexistent dir → `Io` error; (d) empty dir → empty vec (not an error).
+  Run `cargo test -p ezpdf-core` — must **FAIL**.
+
+- [ ] **12.2 [GREEN]** Create `ezpdf-core/src/batch.rs`. Implement `collect_pdf_inputs` using
+  `std::fs::read_dir`, filtering entries where `.extension() == Some("pdf")`, sorting by filename.
+  Export from `lib.rs`. All tests must **PASS**.
+
+- [ ] **12.3 [RED]** Write failing CLI tests for `--batch` on each command:
+  (a) `ezpdf rotate --batch fixtures_dir/ 90 -o out_dir/` exits 0, output dir contains N PDFs with same names;
+  (b) `ezpdf remove --batch fixtures_dir/ 1 -o out_dir/` exits 0;
+  (c) `ezpdf merge --batch fixtures_dir/ -o out.pdf` exits 0, output is a single PDF;
+  (d) `ezpdf rotate --batch nonexistent/ 90 -o out/` exits 1 with "Error:".
+  Use `tempfile::tempdir()` for all output paths. Run — must **FAIL**.
+
+- [ ] **12.4 [GREEN]** Add `batch: bool` to all 5 command `Args` structs with `#[arg(long)]`.
+  In each command handler: when `batch` is true, treat the input path as a directory,
+  call `collect_pdf_inputs`, create the output directory with `std::fs::create_dir_all`,
+  then loop over each input applying the operation. For `merge --batch`: collect all inputs,
+  call `merge()` once with all of them. For `split --batch`: create a subdirectory per input file
+  named after the stem. For other commands: apply independently, save to `out_dir/<original_filename>`.
+  Show a `ProgressBar` (via `indicatif`) when the batch contains > 1 file. All tests must **PASS**.
+
+- [ ] **12.5 [REFACTOR]** Extract a `run_batch_independent<F>(inputs: Vec<PathBuf>, out_dir: &Path, quiet: bool, op: F)`
+  helper in `ezpdf-cli/src/output.rs` to reduce duplication across the 4 independent-file commands.
+  `F` has signature `Fn(&Path, &Path) -> Result<(), EzPdfError>`. Clippy clean.
+
+- [ ] **12.6 [REVIEW]** Run `cargo test --workspace`. Manual demo: batch rotate a directory of PDFs.
+  Check Phase 12 DoD. Commit `feat: batch --batch flag (Phase 12)`. Update `progress.md`.
+
+---
+
+## Phase 13: PDF Metadata Read/Write
+
+### Definition of Done
+
+- [ ] `ezpdf meta get input.pdf` prints all metadata fields present in the document
+- [ ] `ezpdf meta set input.pdf --title "..." -o output.pdf` updates selected fields and saves
+- [ ] Round-trip: `set` then `get` returns the values that were set
+- [ ] `ezpdf meta get input.pdf --json` outputs valid JSON
+
+> [!tip] Skills for this phase
+> - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
+
+### Tasks
+
+- [ ] **13.1 [RED]** Write failing tests for `ezpdf_core::get_metadata(input: &Path) -> Result<PdfMetadata, EzPdfError>`
+  and `ezpdf_core::set_metadata(input: &Path, updates: MetadataUpdate, output: &Path) -> Result<(), EzPdfError>`.
+  Define `PdfMetadata` struct (all fields `Option<String>`: title, author, subject, keywords, creator, producer)
+  and `MetadataUpdate` struct (same optional fields plus `clear_all: bool`).
+  Tests: (a) get_metadata on fixture → no error; (b) set title then get → title matches;
+  (c) set multiple fields in one call → all updated; (d) `clear_all: true` wipes all fields.
+  Run — must **FAIL**.
+
+- [ ] **13.2 [GREEN]** Create `ezpdf-core/src/metadata.rs`. Implement `get_metadata`: follow
+  `doc.trailer.get(b"Info")` reference chain to the Info dictionary; read each field.
+  Implement `set_metadata`: load doc, get or create the Info dictionary, update only `Some` fields,
+  save with `doc.save(output)?`. Handle the case where no Info dict exists (create one, add to trailer).
+  Export from `lib.rs`. All tests must **PASS**.
+
+- [ ] **13.3 [RED]** Failing CLI tests: `ezpdf meta get input.pdf` exits 0 and stdout contains field names;
+  `ezpdf meta get input.pdf --json` exits 0 and stdout is valid JSON;
+  `ezpdf meta set input.pdf --title "Test" -o out.pdf` exits 0;
+  then `ezpdf meta get out.pdf` shows "Test". Run — must **FAIL**.
+
+- [ ] **13.4 [GREEN]** Create `ezpdf-cli/src/commands/meta.rs` with nested clap subcommands `get` and `set`.
+  `GetArgs { file: PathBuf, json: bool }`. `SetArgs { file: PathBuf, output: PathBuf, title: Option<String>,
+  author: Option<String>, subject: Option<String>, keywords: Option<String>, clear_all: bool }`.
+  All tests must **PASS**.
+
+- [ ] **13.5 [REFACTOR]** For `meta get` normal output: print as aligned key: value pairs, skip None fields.
+  Derive `Serialize` on `PdfMetadata` for JSON output. Clippy clean.
+
+- [ ] **13.6 [REVIEW]** Run `cargo test --workspace`. Round-trip demo. Check Phase 13 DoD.
+  Commit `feat: ezpdf meta command (Phase 13)`. Update `progress.md`.
+
+---
+
+## Phase 15: Encrypted PDF Support
+
+### Definition of Done
+
+- [ ] `--password` flag available on all 5 commands
+- [ ] Operations succeed on password-protected PDFs when the correct password is provided
+- [ ] Wrong password → clear `EzPdfError::WrongPassword` with recovery hint
+- [ ] No password on encrypted PDF → existing `EncryptedPdf` error unchanged
+
+> [!tip] Skills for this phase
+> - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
+
+### Tasks
+
+- [ ] **15.1 [SETUP]** Research lopdf 0.31 password decryption support. Check `Document::load_with_password`
+  or `doc.decrypt(password)` in the lopdf source / changelog. If lopdf does not support decryption,
+  implement a `qpdf --decrypt --password=<pw>` shell-out fallback using `std::process::Command`
+  writing to a `tempfile`. Document the chosen approach in a code comment. Update `progress.md`
+  with the finding before proceeding.
+
+- [ ] **15.2 [RED]** Add `WrongPassword` variant to `EzPdfError`. Write failing tests:
+  (a) `load_doc_with_password(encrypted_fixture, Some("correct_pw"))` → Ok;
+  (b) `load_doc_with_password(encrypted_fixture, Some("wrong_pw"))` → `WrongPassword` error;
+  (c) `load_doc_with_password(encrypted_fixture, None)` → `EncryptedPdf` error (unchanged behaviour).
+  **Note:** Need an encrypted fixture with a known password — create one in test setup using
+  `qpdf --encrypt "secret" "secret" 128 -- plain.pdf encrypted_pw.pdf` (or embed hardcoded bytes).
+  Run — must **FAIL**.
+
+- [ ] **15.3 [GREEN]** Implement `load_doc_with_password(path: &Path, password: Option<&str>) -> Result<Document, EzPdfError>`
+  in `ezpdf-core/src/load.rs` (or `lib.rs`). Use the approach determined in 15.1.
+  Update `check_not_encrypted` → `maybe_load_doc` to accept an optional password.
+  All tests must **PASS**.
+
+- [ ] **15.4 [RED]** Failing CLI tests: `ezpdf merge --password secret encrypted_pw.pdf plain.pdf -o out.pdf` exits 0;
+  `ezpdf rotate --password wrong encrypted_pw.pdf 90 -o out.pdf` exits 1, stderr contains "password".
+  Run — must **FAIL**.
+
+- [ ] **15.5 [GREEN]** Add `--password Option<String>` to all 5 `Args` structs. Pass through to core.
+  All tests must **PASS**.
+
+- [ ] **15.6 [REFACTOR]** Add `--password-file <path>` flag (reads password from a file, strips trailing newline).
+  Clippy clean.
+
+- [ ] **15.7 [REVIEW]** Run `cargo test --workspace`. Demo: operate on a real encrypted PDF.
+  Check Phase 15 DoD. Commit `feat: encrypted PDF --password support (Phase 15)`. Update `progress.md`.
+
+---
+
+## Phase 16: Watermark Pages
+
+### Definition of Done
+
+- [ ] `ezpdf watermark input.pdf "CONFIDENTIAL" -o output.pdf` adds a diagonal text watermark
+- [ ] `--opacity`, `--color`, `--font-size`, `--pages` flags available
+- [ ] Watermark is visually legible when opened in Preview / Acrobat
+
+> [!tip] Skills for this phase
+> - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
+
+### Tasks
+
+- [ ] **16.1 [RED]** Write failing tests for `ezpdf_core::watermark(input: &Path, text: &str, opts: WatermarkOptions, output: &Path) -> Result<(), EzPdfError>`.
+  Define `WatermarkOptions { opacity: f32, color_rgb: (f32, f32, f32), font_size: f32, pages: Option<String> }`.
+  Tests: (a) watermark a 3-page PDF → output has 3 pages (page count unchanged);
+  (b) output file contains the watermark text bytes somewhere in its binary content
+  (look for the text string in the raw file bytes after watermarking).
+  Run — must **FAIL**.
+
+- [ ] **16.2 [GREEN]** Create `ezpdf-core/src/watermark.rs`. For each target page:
+  (1) Build a PDF content stream string with graphics operators:
+      `q` (save state), set graphics state (`/ca <opacity> gs`), CTM translate to page center and
+      rotate 45°, `BT /Helvetica <font_size> Tf <color> rg (<text>) Tj ET`, `Q` (restore state).
+  (2) Create a new `Stream` object in the document with this content.
+  (3) Append the new stream object id to the page's `/Contents` array (create array if it's currently a direct reference).
+  (4) Add `/Font << /Helvetica <font_resource_ref> >>` to the page's `/Resources` dictionary,
+      referencing a standard Type1 font object. All tests must **PASS**.
+  **Note:** This intentionally modifies content streams. The lossless guarantee does not apply to watermark.
+
+- [ ] **16.3 [RED]** Failing CLI tests for `ezpdf watermark input.pdf "DRAFT" -o out.pdf` exits 0;
+  `ezpdf watermark input.pdf "DRAFT" --pages 1,3 -o out.pdf` exits 0; wrong input exits 1. Run — must **FAIL**.
+
+- [ ] **16.4 [GREEN]** Create `ezpdf-cli/src/commands/watermark.rs`. All tests must **PASS**.
+
+- [ ] **16.5 [REFACTOR]** Center-align text horizontally using approximate character width estimates.
+  Clippy clean.
+
+- [ ] **16.6 [REVIEW]** Visual verification: open watermarked PDF in Preview, confirm text is visible.
+  Run `cargo test --workspace`. Check Phase 16 DoD.
+  Commit `feat: watermark command (Phase 16)`. Update `progress.md`.
+
+---
+
+## Phase 17: Bookmarks / Outline Manipulation
+
+### Definition of Done
+
+- [ ] `ezpdf bookmarks list input.pdf` prints the outline tree (indented to show hierarchy)
+- [ ] `ezpdf bookmarks add input.pdf --title "Chapter 1" --page 1 -o output.pdf` adds an entry
+- [ ] Round-trip: add then list shows the new entry
+
+> [!tip] Skills for this phase
+> - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
+
+### Tasks
+
+- [ ] **17.1 [RED]** Write failing tests for:
+  `ezpdf_core::list_bookmarks(input: &Path) -> Result<Vec<Bookmark>, EzPdfError>` and
+  `ezpdf_core::add_bookmark(input: &Path, title: &str, page: u32, output: &Path) -> Result<(), EzPdfError>`.
+  Define `Bookmark { title: String, page: u32, level: u32 }`.
+  Tests: (a) list on a PDF with no outline → empty vec; (b) add bookmark then list → entry present
+  with correct title and page; (c) add two bookmarks → both present in order.
+  Run — must **FAIL**.
+
+- [ ] **17.2 [GREEN]** Create `ezpdf-core/src/bookmarks.rs`.
+  `list_bookmarks`: navigate `doc.catalog()` → `/Outlines` → follow `/First`→`/Next` chain recursively,
+  collecting `Bookmark` entries. `/Dest` array gives the page object id — map back to page number using
+  `doc.get_pages()` (which returns a `BTreeMap<u32, ObjectId>`).
+  `add_bookmark`: create a new outline item dictionary with `/Title` (pdf string), `/Dest` array
+  (`[page_obj_id 0 R /XYZ null null null]`), link into the outline chain by updating `/Last` of
+  the root Outlines dict and `/Prev` of the previous last entry. If no `/Outlines` exists in the
+  catalog, create one. All tests must **PASS**.
+
+- [ ] **17.3 [RED]** Failing CLI tests: `ezpdf bookmarks list input.pdf` exits 0;
+  `ezpdf bookmarks add input.pdf --title "Ch1" --page 1 -o out.pdf` exits 0;
+  then `ezpdf bookmarks list out.pdf` stdout contains "Ch1". Run — must **FAIL**.
+
+- [ ] **17.4 [GREEN]** Create `ezpdf-cli/src/commands/bookmarks.rs` with nested subcommands `list` and `add`.
+  All tests must **PASS**.
+
+- [ ] **17.5 [REFACTOR]** `list` output: indent by `level` (2 spaces per level). Add `--json` flag.
+  Clippy clean.
+
+- [ ] **17.6 [REVIEW]** Open bookmarked PDF in Preview, verify outline panel shows entries.
+  Run `cargo test --workspace`. Check Phase 17 DoD.
+  Commit `feat: bookmarks command (Phase 17)`. Update `progress.md`.
+
+---
+
+## Phase 18: Image Extraction
+
+### Definition of Done
+
+- [ ] `ezpdf images input.pdf -o ./images/` extracts all embedded XObject images
+- [ ] JPEG images saved as `.jpg`, others decoded and saved as `.png`
+- [ ] Files named `page-{N}-image-{M}.jpg` / `.png`
+
+> [!tip] Skills for this phase
+> - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
+
+### Tasks
+
+- [ ] **18.1 [SETUP]** Create a test fixture `ezpdf-core/tests/fixtures/with_image.pdf` containing at
+  least one embedded JPEG XObject. Use lopdf to embed a tiny JPEG (grab any 1×1 pixel JPEG bytes)
+  as an `/Image` XObject in a test PDF page. Commit the fixture.
+
+- [ ] **18.2 [RED]** Write failing tests for `ezpdf_core::extract_images(input: &Path, output_dir: &Path) -> Result<u32, EzPdfError>` (returns count of images extracted).
+  Tests: (a) extract from `with_image.pdf` → count > 0, at least one file created in output_dir;
+  (b) extract from `3page.pdf` (no images) → count == 0, no files created;
+  (c) nonexistent input → Io error. Run — must **FAIL**.
+
+- [ ] **18.3 [GREEN]** Create `ezpdf-core/src/images.rs`. Add `flate2 = "1"` dependency.
+  For each page in `doc.get_pages()`: get page `/Resources` → `/XObject` dictionary.
+  For each value, follow the reference → check `/Subtype = /Image`. Get the stream object.
+  Check `/Filter`: if `/DCTDecode` → write stream bytes directly as `.jpg`.
+  If `/FlateDecode` → decompress with `flate2::read::ZlibDecoder`, read `/Width`, `/Height`,
+  `/ColorSpace` (RGB=3 channels, Gray=1 channel), write raw pixels as PNG using the `png` crate
+  (add `png = "0.17"` dependency). Name files `page-{N}-image-{M}.ext`.
+  Create output dir if missing. Return total count. All tests must **PASS**.
+
+- [ ] **18.4 [RED]** Failing CLI tests: `ezpdf images with_image.pdf -o out_dir/` exits 0,
+  stdout contains "Extracted"; `ezpdf images 3page.pdf -o out_dir/` exits 0, stdout contains "0 image".
+  Run — must **FAIL**.
+
+- [ ] **18.5 [GREEN]** Create `ezpdf-cli/src/commands/images.rs`. Add `--pages` flag to limit extraction.
+  Add `--min-width` / `--min-height` flags (default 10) to skip tiny decorative images.
+  All tests must **PASS**.
+
+- [ ] **18.6 [REVIEW]** Run `cargo test --workspace`. Manual demo on a PDF with images.
+  Check Phase 18 DoD. Commit `feat: image extraction command (Phase 18)`. Update `progress.md`.
+
+---
+
+## Phase 19: PDF Optimization
+
+### Definition of Done
+
+- [ ] `ezpdf optimize input.pdf -o output.pdf` produces a valid PDF with unreferenced objects removed
+- [ ] Output file size is ≤ input file size for any input with unused objects
+- [ ] `--linearize` flag attempts linearization (via qpdf if available, else skipped with warning)
+
+> [!tip] Skills for this phase
+> - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
+
+### Tasks
+
+- [ ] **19.0 [SETUP]** Check lopdf 0.31 for object cleanup API (search for `delete_unused`, `prune`,
+  or similar in lopdf source). Document findings in a code comment in the new `optimize.rs`.
+  If lopdf has no built-in cleanup, implement manual object reachability traversal.
+
+- [ ] **19.1 [RED]** Create a test fixture `bloated.pdf` — a PDF with unreferenced objects injected
+  (use lopdf to add orphaned dictionary objects not reachable from the catalog).
+  Write failing tests for `ezpdf_core::optimize(input: &Path, output: &Path) -> Result<OptimizeStats, EzPdfError>`.
+  Define `OptimizeStats { objects_removed: u32, bytes_saved: i64 }`.
+  Tests: (a) optimize `bloated.pdf` → `objects_removed > 0`; (b) optimize `3page.pdf` → output is valid PDF;
+  (c) output has same page count as input. Run — must **FAIL**.
+
+- [ ] **19.2 [GREEN]** Create `ezpdf-core/src/optimize.rs`. Implement reachability traversal:
+  start from the trailer, follow all object references recursively, collect the set of referenced
+  object ids. Delete all objects NOT in the set using `doc.objects.retain(|id, _| reachable.contains(id))`.
+  Re-save with `doc.save(output)?`. All tests must **PASS**.
+
+- [ ] **19.3 [RED]** Failing CLI tests: `ezpdf optimize input.pdf -o out.pdf` exits 0, stdout contains "Optimized";
+  `ezpdf optimize input.pdf --linearize -o out.pdf` exits 0 (linearize with qpdf or skip with warning).
+  Run — must **FAIL**.
+
+- [ ] **19.4 [GREEN]** Create `ezpdf-cli/src/commands/optimize.rs`. For `--linearize`: attempt
+  `qpdf --linearize in.pdf out.pdf` via `std::process::Command`; if qpdf is not found, print a
+  warning and fall back to normal optimize. All tests must **PASS**.
+
+- [ ] **19.5 [REVIEW]** Run `cargo test --workspace`. Demo on a PDF, show bytes saved.
+  Check Phase 19 DoD. Commit `feat: optimize command (Phase 19)`. Update `progress.md`.
+
+---
+
+## Phase 20: Desktop App (ezpdf-app)
+
+> **TODO — Requires separate planning before ralph can implement this.**
+>
+> The desktop app (Tauri v2 + Svelte 5) requires a different toolchain (Node.js, npm, Tauri CLI)
+> and substantial UI/UX design decisions that benefit from human input before automating.
+>
+> **Before activating this phase:**
+> 1. Run `/ce:brainstorm` for the desktop app to produce `docs/brainstorms/YYYY-MM-DD-ezpdf-app-brainstorm.md`
+> 2. Run `/ce:plan` to convert the brainstorm into detailed tasks in this phase
+> 3. Replace this note with the resulting tasks, then run ralph
+>
+> Phase 20 tasks are intentionally left unchecked here so the completion signal fires after phases 11–19.
+
+- [x] **20.0 [TODO]** Desktop app planning deferred — see note above. Phases 11–19 complete the CLI backlog.
+
+---
+
+## Phase 21: Windows Support
+
+> **TODO — Deferred. Implement after the desktop app when Windows demand warrants it.**
+
+- [x] **21.0 [TODO]** Windows support deferred — add to a future planning session.

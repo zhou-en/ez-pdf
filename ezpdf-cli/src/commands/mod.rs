@@ -1,4 +1,5 @@
 pub mod completions;
+pub mod info;
 pub mod merge;
 pub mod remove;
 pub mod reorder;

@@ -87,4 +87,4 @@ If you discover a blocker during a task (something that prevents you from comple
 
 When ALL tasks across ALL phases in `task_plan.md` are checked off (`- [x]`), output:
 
-<promise>EZPDF V1 COMPLETE</promise>
+<promise>EZPDF BACKLOG COMPLETE</promise>
