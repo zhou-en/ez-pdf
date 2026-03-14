@@ -294,3 +294,20 @@ All 10 phases done. 66 tests passing. Clippy/fmt clean.
 
 **Deviations / blockers found:**
 - `--pages` and `--min-width/--min-height` flags from task description not added — tests didn't require them and adding unneeded flags violates the over-engineering rule
+
+---
+
+## 2026-03-14 — Phase 19 complete: PDF Optimization
+
+**Completed tasks:**
+- 19.0 [SETUP] lopdf 0.31 has `Document::prune_objects()` in `processor.rs` — uses built-in reachability traversal; no manual implementation needed
+- 19.1 [RED] Created `bloated.pdf` fixture (3 orphan objects) + 3 failing tests
+- 19.2 [GREEN] `ezpdf-core/src/optimize.rs` — calls `doc.prune_objects()` + reports count/bytes saved
+- 19.3 [RED] 3 failing CLI tests (Optimized msg, --linearize flag, nonexistent error)
+- 19.4 [GREEN] `ezpdf-cli/src/commands/optimize.rs` — `--linearize` attempts qpdf, falls back with warning
+- 19.5 [REVIEW] all tests pass, clippy clean
+
+**Tests passing:** 121 (6 new)
+
+**Deviations / blockers found:**
+- none

@@ -615,40 +615,40 @@ _None yet. Blockers found during stories will be injected here._
 
 ### Definition of Done
 
-- [ ] `ezpdf optimize input.pdf -o output.pdf` produces a valid PDF with unreferenced objects removed
-- [ ] Output file size is ≤ input file size for any input with unused objects
-- [ ] `--linearize` flag attempts linearization (via qpdf if available, else skipped with warning)
+- [x] `ezpdf optimize input.pdf -o output.pdf` produces a valid PDF with unreferenced objects removed
+- [x] Output file size is ≤ input file size for any input with unused objects
+- [x] `--linearize` flag attempts linearization (via qpdf if available, else skipped with warning)
 
 > [!tip] Skills for this phase
 > - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
 
 ### Tasks
 
-- [ ] **19.0 [SETUP]** Check lopdf 0.31 for object cleanup API (search for `delete_unused`, `prune`,
+- [x] **19.0 [SETUP]** Check lopdf 0.31 for object cleanup API (search for `delete_unused`, `prune`,
   or similar in lopdf source). Document findings in a code comment in the new `optimize.rs`.
   If lopdf has no built-in cleanup, implement manual object reachability traversal.
 
-- [ ] **19.1 [RED]** Create a test fixture `bloated.pdf` — a PDF with unreferenced objects injected
+- [x] **19.1 [RED]** Create a test fixture `bloated.pdf` — a PDF with unreferenced objects injected
   (use lopdf to add orphaned dictionary objects not reachable from the catalog).
   Write failing tests for `ezpdf_core::optimize(input: &Path, output: &Path) -> Result<OptimizeStats, EzPdfError>`.
   Define `OptimizeStats { objects_removed: u32, bytes_saved: i64 }`.
   Tests: (a) optimize `bloated.pdf` → `objects_removed > 0`; (b) optimize `3page.pdf` → output is valid PDF;
   (c) output has same page count as input. Run — must **FAIL**.
 
-- [ ] **19.2 [GREEN]** Create `ezpdf-core/src/optimize.rs`. Implement reachability traversal:
+- [x] **19.2 [GREEN]** Create `ezpdf-core/src/optimize.rs`. Implement reachability traversal:
   start from the trailer, follow all object references recursively, collect the set of referenced
   object ids. Delete all objects NOT in the set using `doc.objects.retain(|id, _| reachable.contains(id))`.
   Re-save with `doc.save(output)?`. All tests must **PASS**.
 
-- [ ] **19.3 [RED]** Failing CLI tests: `ezpdf optimize input.pdf -o out.pdf` exits 0, stdout contains "Optimized";
+- [x] **19.3 [RED]** Failing CLI tests: `ezpdf optimize input.pdf -o out.pdf` exits 0, stdout contains "Optimized";
   `ezpdf optimize input.pdf --linearize -o out.pdf` exits 0 (linearize with qpdf or skip with warning).
   Run — must **FAIL**.
 
-- [ ] **19.4 [GREEN]** Create `ezpdf-cli/src/commands/optimize.rs`. For `--linearize`: attempt
+- [x] **19.4 [GREEN]** Create `ezpdf-cli/src/commands/optimize.rs`. For `--linearize`: attempt
   `qpdf --linearize in.pdf out.pdf` via `std::process::Command`; if qpdf is not found, print a
   warning and fall back to normal optimize. All tests must **PASS**.
 
-- [ ] **19.5 [REVIEW]** Run `cargo test --workspace`. Demo on a PDF, show bytes saved.
+- [x] **19.5 [REVIEW]** Run `cargo test --workspace`. Demo on a PDF, show bytes saved.
   Check Phase 19 DoD. Commit `feat: optimize command (Phase 19)`. Update `progress.md`.
 
 ---

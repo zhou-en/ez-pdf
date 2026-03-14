@@ -8,6 +8,7 @@ use commands::images::ImagesArgs;
 use commands::info::InfoArgs;
 use commands::merge::MergeArgs;
 use commands::meta::MetaArgs;
+use commands::optimize::OptimizeArgs;
 use commands::remove::RemoveArgs;
 use commands::reorder::ReorderArgs;
 use commands::rotate::RotateArgs;
@@ -34,6 +35,8 @@ enum Commands {
     Completions(CompletionsArgs),
     /// Extract embedded images from a PDF
     Images(ImagesArgs),
+    /// Remove unreferenced objects to reduce file size
+    Optimize(OptimizeArgs),
     /// Show page count, dimensions, and metadata of a PDF
     Info(InfoArgs),
     /// Read or write PDF metadata fields
@@ -59,6 +62,7 @@ fn main() {
         Commands::Bookmarks(args) => commands::bookmarks::run(args),
         Commands::Completions(args) => commands::completions::run(args),
         Commands::Images(args) => commands::images::run(args),
+        Commands::Optimize(args) => commands::optimize::run(args),
         Commands::Info(args) => commands::info::run(args),
         Commands::Meta(args) => commands::meta::run(args),
         Commands::Merge(args) => commands::merge::run(args),

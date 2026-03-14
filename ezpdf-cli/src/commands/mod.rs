@@ -4,6 +4,7 @@ pub mod images;
 pub mod info;
 pub mod merge;
 pub mod meta;
+pub mod optimize;
 pub mod remove;
 pub mod reorder;
 pub mod rotate;
