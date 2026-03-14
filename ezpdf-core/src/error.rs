@@ -13,6 +13,9 @@ pub enum EzPdfError {
     )]
     EncryptedPdf,
 
+    #[error("wrong PDF password; check the password and try again")]
+    WrongPassword,
+
     #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
 

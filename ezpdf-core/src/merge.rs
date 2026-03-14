@@ -88,7 +88,14 @@ fn build_merged(mut docs: Vec<Document>) -> Result<Document, EzPdfError> {
 }
 
 pub(crate) fn load_doc(path: &Path) -> Result<Document, EzPdfError> {
-    let doc = Document::load(path).map_err(|e| match e {
+    load_doc_with_password(path, None)
+}
+
+pub fn load_doc_with_password(
+    path: &Path,
+    password: Option<&str>,
+) -> Result<Document, EzPdfError> {
+    let mut doc = Document::load(path).map_err(|e| match e {
         lopdf::Error::IO(io_err) => EzPdfError::Io(std::io::Error::new(
             io_err.kind(),
             format!("{}: {io_err}", path.display()),
@@ -99,8 +106,20 @@ pub(crate) fn load_doc(path: &Path) -> Result<Document, EzPdfError> {
             path.display()
         ))),
     })?;
+
     if doc.is_encrypted() {
-        return Err(EzPdfError::EncryptedPdf);
+        let pw = match password {
+            Some(p) => p,
+            None => return Err(EzPdfError::EncryptedPdf),
+        };
+        doc.decrypt(pw).map_err(|e| {
+            if e.to_string().contains("incorrect") {
+                EzPdfError::WrongPassword
+            } else {
+                EzPdfError::Pdf(e.to_string())
+            }
+        })?;
     }
+
     Ok(doc)
 }

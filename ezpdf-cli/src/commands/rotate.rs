@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::Args;
 use ezpdf_core::{batch::collect_pdf_inputs, rotate};
 
-use crate::output::{print_success, run_batch_independent};
+use crate::output::{print_success, resolve_input, resolve_password, run_batch_independent};
 
 #[derive(Args)]
 pub struct RotateArgs {
@@ -20,6 +20,14 @@ pub struct RotateArgs {
     /// Output PDF file path (or directory when --batch is set)
     #[arg(short, long)]
     pub output: PathBuf,
+
+    /// Password for encrypted input PDF
+    #[arg(long)]
+    pub password: Option<String>,
+
+    /// Read password from a file (strips trailing whitespace)
+    #[arg(long, value_name = "FILE")]
+    pub password_file: Option<PathBuf>,
 
     /// Process all PDFs in input directory, writing results to output directory
     #[arg(long)]
@@ -43,7 +51,9 @@ pub fn run(args: RotateArgs) -> anyhow::Result<()> {
             move |src, dst| rotate(src, degrees, pages.as_deref(), dst),
         )?;
     } else {
-        rotate(&args.input, args.degrees, args.pages.as_deref(), &args.output)?;
+        let pw = resolve_password(args.password.as_deref(), args.password_file.as_deref())?;
+        let (input, _tmp) = resolve_input(&args.input, pw.as_deref())?;
+        rotate(&input, args.degrees, args.pages.as_deref(), &args.output)?;
         print_success(
             &format!("Rotated {}° → {}", args.degrees, args.output.display()),
             args.quiet,
