@@ -481,23 +481,23 @@ _None yet. Blockers found during stories will be injected here._
 
 ### Definition of Done
 
-- [ ] `ezpdf watermark input.pdf "CONFIDENTIAL" -o output.pdf` adds a diagonal text watermark
-- [ ] `--opacity`, `--color`, `--font-size`, `--pages` flags available
-- [ ] Watermark is visually legible when opened in Preview / Acrobat
+- [x] `ezpdf watermark input.pdf "CONFIDENTIAL" -o output.pdf` adds a diagonal text watermark
+- [x] `--opacity`, `--color`, `--font-size`, `--pages` flags available
+- [x] Watermark is visually legible when opened in Preview / Acrobat
 
 > [!tip] Skills for this phase
 > - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
 
 ### Tasks
 
-- [ ] **16.1 [RED]** Write failing tests for `ezpdf_core::watermark(input: &Path, text: &str, opts: WatermarkOptions, output: &Path) -> Result<(), EzPdfError>`.
+- [x] **16.1 [RED]** Write failing tests for `ezpdf_core::watermark(input: &Path, text: &str, opts: WatermarkOptions, output: &Path) -> Result<(), EzPdfError>`.
   Define `WatermarkOptions { opacity: f32, color_rgb: (f32, f32, f32), font_size: f32, pages: Option<String> }`.
   Tests: (a) watermark a 3-page PDF → output has 3 pages (page count unchanged);
   (b) output file contains the watermark text bytes somewhere in its binary content
   (look for the text string in the raw file bytes after watermarking).
   Run — must **FAIL**.
 
-- [ ] **16.2 [GREEN]** Create `ezpdf-core/src/watermark.rs`. For each target page:
+- [x] **16.2 [GREEN]** Create `ezpdf-core/src/watermark.rs`. For each target page:
   (1) Build a PDF content stream string with graphics operators:
       `q` (save state), set graphics state (`/ca <opacity> gs`), CTM translate to page center and
       rotate 45°, `BT /Helvetica <font_size> Tf <color> rg (<text>) Tj ET`, `Q` (restore state).
@@ -507,15 +507,15 @@ _None yet. Blockers found during stories will be injected here._
       referencing a standard Type1 font object. All tests must **PASS**.
   **Note:** This intentionally modifies content streams. The lossless guarantee does not apply to watermark.
 
-- [ ] **16.3 [RED]** Failing CLI tests for `ezpdf watermark input.pdf "DRAFT" -o out.pdf` exits 0;
+- [x] **16.3 [RED]** Failing CLI tests for `ezpdf watermark input.pdf "DRAFT" -o out.pdf` exits 0;
   `ezpdf watermark input.pdf "DRAFT" --pages 1,3 -o out.pdf` exits 0; wrong input exits 1. Run — must **FAIL**.
 
-- [ ] **16.4 [GREEN]** Create `ezpdf-cli/src/commands/watermark.rs`. All tests must **PASS**.
+- [x] **16.4 [GREEN]** Create `ezpdf-cli/src/commands/watermark.rs`. All tests must **PASS**.
 
-- [ ] **16.5 [REFACTOR]** Center-align text horizontally using approximate character width estimates.
+- [x] **16.5 [REFACTOR]** Center-align text horizontally using approximate character width estimates.
   Clippy clean.
 
-- [ ] **16.6 [REVIEW]** Visual verification: open watermarked PDF in Preview, confirm text is visible.
+- [x] **16.6 [REVIEW]** Visual verification: open watermarked PDF in Preview, confirm text is visible.
   Run `cargo test --workspace`. Check Phase 16 DoD.
   Commit `feat: watermark command (Phase 16)`. Update `progress.md`.
 

@@ -243,3 +243,20 @@ All 10 phases done. 66 tests passing. Clippy/fmt clean.
 
 **Deviations / blockers found:**
 - Used pre-decrypt-to-tempfile approach in CLI instead of threading password through core function signatures — avoids breaking changes to core API and is simpler overall
+
+---
+
+## 2026-03-14 — Phase 16 complete: Watermark Pages
+
+**Completed tasks:**
+- 16.1 [RED] 2 failing tests for watermark (page count preserved, text appears in output bytes)
+- 16.2 [GREEN] `ezpdf-core/src/watermark.rs` — diagonal watermark via content stream append, Helvetica Type1, /ExtGState opacity
+- 16.3 [RED] 3 failing CLI tests for `ezpdf watermark`
+- 16.4 [GREEN] `ezpdf-cli/src/commands/watermark.rs` with --opacity, --color, --font-size, --pages flags
+- 16.5 [REFACTOR] center-aligned text using 0.55 × font_size char width estimate; extracted WatermarkDraw struct for clippy compliance
+- 16.6 [REVIEW] all tests pass, clippy clean; visual check: watermark appears diagonally
+
+**Tests passing:** 102 (5 new)
+
+**Deviations / blockers found:**
+- none
