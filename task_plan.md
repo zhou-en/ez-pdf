@@ -433,23 +433,23 @@ _None yet. Blockers found during stories will be injected here._
 
 ### Definition of Done
 
-- [ ] `--password` flag available on all 5 commands
-- [ ] Operations succeed on password-protected PDFs when the correct password is provided
-- [ ] Wrong password → clear `EzPdfError::WrongPassword` with recovery hint
-- [ ] No password on encrypted PDF → existing `EncryptedPdf` error unchanged
+- [x] `--password` flag available on all 5 commands
+- [x] Operations succeed on password-protected PDFs when the correct password is provided
+- [x] Wrong password → clear `EzPdfError::WrongPassword` with recovery hint
+- [x] No password on encrypted PDF → existing `EncryptedPdf` error unchanged
 
 > [!tip] Skills for this phase
 > - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
 
 ### Tasks
 
-- [ ] **15.1 [SETUP]** Research lopdf 0.31 password decryption support. Check `Document::load_with_password`
+- [x] **15.1 [SETUP]** Research lopdf 0.31 password decryption support. Check `Document::load_with_password`
   or `doc.decrypt(password)` in the lopdf source / changelog. If lopdf does not support decryption,
   implement a `qpdf --decrypt --password=<pw>` shell-out fallback using `std::process::Command`
   writing to a `tempfile`. Document the chosen approach in a code comment. Update `progress.md`
   with the finding before proceeding.
 
-- [ ] **15.2 [RED]** Add `WrongPassword` variant to `EzPdfError`. Write failing tests:
+- [x] **15.2 [RED]** Add `WrongPassword` variant to `EzPdfError`. Write failing tests:
   (a) `load_doc_with_password(encrypted_fixture, Some("correct_pw"))` → Ok;
   (b) `load_doc_with_password(encrypted_fixture, Some("wrong_pw"))` → `WrongPassword` error;
   (c) `load_doc_with_password(encrypted_fixture, None)` → `EncryptedPdf` error (unchanged behaviour).
@@ -457,22 +457,22 @@ _None yet. Blockers found during stories will be injected here._
   `qpdf --encrypt "secret" "secret" 128 -- plain.pdf encrypted_pw.pdf` (or embed hardcoded bytes).
   Run — must **FAIL**.
 
-- [ ] **15.3 [GREEN]** Implement `load_doc_with_password(path: &Path, password: Option<&str>) -> Result<Document, EzPdfError>`
+- [x] **15.3 [GREEN]** Implement `load_doc_with_password(path: &Path, password: Option<&str>) -> Result<Document, EzPdfError>`
   in `ezpdf-core/src/load.rs` (or `lib.rs`). Use the approach determined in 15.1.
   Update `check_not_encrypted` → `maybe_load_doc` to accept an optional password.
   All tests must **PASS**.
 
-- [ ] **15.4 [RED]** Failing CLI tests: `ezpdf merge --password secret encrypted_pw.pdf plain.pdf -o out.pdf` exits 0;
+- [x] **15.4 [RED]** Failing CLI tests: `ezpdf merge --password secret encrypted_pw.pdf plain.pdf -o out.pdf` exits 0;
   `ezpdf rotate --password wrong encrypted_pw.pdf 90 -o out.pdf` exits 1, stderr contains "password".
   Run — must **FAIL**.
 
-- [ ] **15.5 [GREEN]** Add `--password Option<String>` to all 5 `Args` structs. Pass through to core.
+- [x] **15.5 [GREEN]** Add `--password Option<String>` to all 5 `Args` structs. Pass through to core.
   All tests must **PASS**.
 
-- [ ] **15.6 [REFACTOR]** Add `--password-file <path>` flag (reads password from a file, strips trailing newline).
+- [x] **15.6 [REFACTOR]** Add `--password-file <path>` flag (reads password from a file, strips trailing newline).
   Clippy clean.
 
-- [ ] **15.7 [REVIEW]** Run `cargo test --workspace`. Demo: operate on a real encrypted PDF.
+- [x] **15.7 [REVIEW]** Run `cargo test --workspace`. Demo: operate on a real encrypted PDF.
   Check Phase 15 DoD. Commit `feat: encrypted PDF --password support (Phase 15)`. Update `progress.md`.
 
 ---

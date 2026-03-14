@@ -225,3 +225,21 @@ All 10 phases done. 66 tests passing. Clippy/fmt clean.
 
 **Deviations / blockers found:**
 - none
+
+---
+
+## 2026-03-14 — Phase 15 complete: Encrypted PDF Support
+
+**Completed tasks:**
+- 15.1 [SETUP] Researched lopdf 0.31: native `doc.decrypt(password)` available — no qpdf shell-out needed. Wrong password → `DecryptionError::IncorrectPassword`. Created `encrypted_pw.pdf` fixture via qpdf (password: "secret").
+- 15.2 [RED] Added `WrongPassword` to `EzPdfError`; wrote 3 failing tests in `load_tests.rs`
+- 15.3 [GREEN] `load_doc_with_password` in `merge.rs`; `load_doc` delegates to it with `None`
+- 15.4 [RED] Failing CLI tests for `--password` on merge/rotate/remove/reorder/split
+- 15.5 [GREEN] `resolve_input` helper in `output.rs` pre-decrypts to temp file; added `--password` to all 5 Args
+- 15.6 [REFACTOR] Added `--password-file` flag; `resolve_password` helper; clippy clean
+- 15.7 [REVIEW] all tests pass, clippy clean
+
+**Tests passing:** 97 (8 new)
+
+**Deviations / blockers found:**
+- Used pre-decrypt-to-tempfile approach in CLI instead of threading password through core function signatures — avoids breaking changes to core API and is simpler overall
