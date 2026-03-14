@@ -260,3 +260,20 @@ All 10 phases done. 66 tests passing. Clippy/fmt clean.
 
 **Deviations / blockers found:**
 - none
+
+---
+
+## 2026-03-14 — Phase 17 complete: Bookmarks / Outline Manipulation
+
+**Completed tasks:**
+- 17.1 [RED] 4 failing core tests (no outline → empty, add then list, add two in order, level=0)
+- 17.2 [GREEN] `ezpdf-core/src/bookmarks.rs` — `Bookmark { title, page, level }`, `list_bookmarks` walks /First→/Next chain, `add_bookmark` creates /Outlines root if absent, links new item as /Last
+- 17.3 [RED] 3 failing CLI tests (list exits 0, add+list round-trip, nonexistent exits 1)
+- 17.4 [GREEN] `ezpdf-cli/src/commands/bookmarks.rs` — nested `list`/`add` subcommands; `--json` flag on list
+- 17.5 [REFACTOR] indent by level (2 spaces), fmt + clippy clean
+- 17.6 [REVIEW] all tests pass, clippy clean
+
+**Tests passing:** 109 (7 new)
+
+**Deviations / blockers found:**
+- none

@@ -525,16 +525,16 @@ _None yet. Blockers found during stories will be injected here._
 
 ### Definition of Done
 
-- [ ] `ezpdf bookmarks list input.pdf` prints the outline tree (indented to show hierarchy)
-- [ ] `ezpdf bookmarks add input.pdf --title "Chapter 1" --page 1 -o output.pdf` adds an entry
-- [ ] Round-trip: add then list shows the new entry
+- [x] `ezpdf bookmarks list input.pdf` prints the outline tree (indented to show hierarchy)
+- [x] `ezpdf bookmarks add input.pdf --title "Chapter 1" --page 1 -o output.pdf` adds an entry
+- [x] Round-trip: add then list shows the new entry
 
 > [!tip] Skills for this phase
 > - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
 
 ### Tasks
 
-- [ ] **17.1 [RED]** Write failing tests for:
+- [x] **17.1 [RED]** Write failing tests for:
   `ezpdf_core::list_bookmarks(input: &Path) -> Result<Vec<Bookmark>, EzPdfError>` and
   `ezpdf_core::add_bookmark(input: &Path, title: &str, page: u32, output: &Path) -> Result<(), EzPdfError>`.
   Define `Bookmark { title: String, page: u32, level: u32 }`.
@@ -542,7 +542,7 @@ _None yet. Blockers found during stories will be injected here._
   with correct title and page; (c) add two bookmarks → both present in order.
   Run — must **FAIL**.
 
-- [ ] **17.2 [GREEN]** Create `ezpdf-core/src/bookmarks.rs`.
+- [x] **17.2 [GREEN]** Create `ezpdf-core/src/bookmarks.rs`.
   `list_bookmarks`: navigate `doc.catalog()` → `/Outlines` → follow `/First`→`/Next` chain recursively,
   collecting `Bookmark` entries. `/Dest` array gives the page object id — map back to page number using
   `doc.get_pages()` (which returns a `BTreeMap<u32, ObjectId>`).
@@ -551,17 +551,17 @@ _None yet. Blockers found during stories will be injected here._
   the root Outlines dict and `/Prev` of the previous last entry. If no `/Outlines` exists in the
   catalog, create one. All tests must **PASS**.
 
-- [ ] **17.3 [RED]** Failing CLI tests: `ezpdf bookmarks list input.pdf` exits 0;
+- [x] **17.3 [RED]** Failing CLI tests: `ezpdf bookmarks list input.pdf` exits 0;
   `ezpdf bookmarks add input.pdf --title "Ch1" --page 1 -o out.pdf` exits 0;
   then `ezpdf bookmarks list out.pdf` stdout contains "Ch1". Run — must **FAIL**.
 
-- [ ] **17.4 [GREEN]** Create `ezpdf-cli/src/commands/bookmarks.rs` with nested subcommands `list` and `add`.
+- [x] **17.4 [GREEN]** Create `ezpdf-cli/src/commands/bookmarks.rs` with nested subcommands `list` and `add`.
   All tests must **PASS**.
 
-- [ ] **17.5 [REFACTOR]** `list` output: indent by `level` (2 spaces per level). Add `--json` flag.
+- [x] **17.5 [REFACTOR]** `list` output: indent by `level` (2 spaces per level). Add `--json` flag.
   Clippy clean.
 
-- [ ] **17.6 [REVIEW]** Open bookmarked PDF in Preview, verify outline panel shows entries.
+- [x] **17.6 [REVIEW]** Open bookmarked PDF in Preview, verify outline panel shows entries.
   Run `cargo test --workspace`. Check Phase 17 DoD.
   Commit `feat: bookmarks command (Phase 17)`. Update `progress.md`.
 

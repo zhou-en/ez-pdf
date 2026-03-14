@@ -48,7 +48,14 @@ pub fn watermark(
     ])));
 
     let (r, g, b) = opts.color_rgb;
-    let draw = WatermarkDraw { text, opacity: opts.opacity, r, g, b, font_size: opts.font_size };
+    let draw = WatermarkDraw {
+        text,
+        opacity: opts.opacity,
+        r,
+        g,
+        b,
+        font_size: opts.font_size,
+    };
 
     for page_id in page_ids {
         let stream_id = add_watermark_stream(&mut doc, &draw, font_id)?;
@@ -75,7 +82,14 @@ fn add_watermark_stream(
     draw: &WatermarkDraw<'_>,
     _font_id: lopdf::ObjectId,
 ) -> Result<lopdf::ObjectId, EzPdfError> {
-    let WatermarkDraw { text, opacity, r, g, b, font_size } = *draw;
+    let WatermarkDraw {
+        text,
+        opacity,
+        r,
+        g,
+        b,
+        font_size,
+    } = *draw;
 
     // Approximate Helvetica character width ≈ 0.55 × font_size per character
     let text_width = text.len() as f32 * font_size * 0.55;

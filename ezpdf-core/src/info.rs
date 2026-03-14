@@ -70,10 +70,7 @@ fn page_dimensions(doc: &lopdf::Document, page_id: lopdf::ObjectId) -> (f64, f64
                 }
             }
             // Walk up to parent
-            current_id = dict
-                .get(b"Parent")
-                .ok()
-                .and_then(|o| o.as_reference().ok());
+            current_id = dict.get(b"Parent").ok().and_then(|o| o.as_reference().ok());
         } else {
             break;
         }
@@ -85,11 +82,7 @@ fn page_dimensions(doc: &lopdf::Document, page_id: lopdf::ObjectId) -> (f64, f64
 fn get_info_dict(doc: &lopdf::Document) -> Option<lopdf::Dictionary> {
     let info_ref = doc.trailer.get(b"Info").ok()?;
     let info_id = info_ref.as_reference().ok()?;
-    doc.get_object(info_id)
-        .ok()?
-        .as_dict()
-        .ok()
-        .cloned()
+    doc.get_object(info_id).ok()?.as_dict().ok().cloned()
 }
 
 /// Read a PDF string field from a dictionary, decoding bytes as UTF-8 best-effort.
@@ -103,7 +96,13 @@ fn pdf_string(dict: &lopdf::Dictionary, key: &[u8]) -> Option<String> {
     if bytes.starts_with(&[0xFE, 0xFF]) {
         let pairs: Vec<u16> = bytes[2..]
             .chunks(2)
-            .map(|c| if c.len() == 2 { u16::from_be_bytes([c[0], c[1]]) } else { 0 })
+            .map(|c| {
+                if c.len() == 2 {
+                    u16::from_be_bytes([c[0], c[1]])
+                } else {
+                    0
+                }
+            })
             .collect();
         String::from_utf16(&pairs).ok()
     } else {

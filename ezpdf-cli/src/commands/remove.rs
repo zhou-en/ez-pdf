@@ -4,7 +4,9 @@ use clap::Args;
 use ezpdf_core::{batch::collect_pdf_inputs, remove};
 use lopdf::Document;
 
-use crate::output::{maybe_progress, print_success, resolve_input, resolve_password, run_batch_independent};
+use crate::output::{
+    maybe_progress, print_success, resolve_input, resolve_password, run_batch_independent,
+};
 
 #[derive(Args)]
 pub struct RemoveArgs {

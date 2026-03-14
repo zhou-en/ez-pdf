@@ -91,10 +91,7 @@ pub(crate) fn load_doc(path: &Path) -> Result<Document, EzPdfError> {
     load_doc_with_password(path, None)
 }
 
-pub fn load_doc_with_password(
-    path: &Path,
-    password: Option<&str>,
-) -> Result<Document, EzPdfError> {
+pub fn load_doc_with_password(path: &Path, password: Option<&str>) -> Result<Document, EzPdfError> {
     let mut doc = Document::load(path).map_err(|e| match e {
         lopdf::Error::IO(io_err) => EzPdfError::Io(std::io::Error::new(
             io_err.kind(),

@@ -2,6 +2,7 @@ mod commands;
 mod output;
 
 use clap::{Parser, Subcommand};
+use commands::bookmarks::BookmarksArgs;
 use commands::completions::CompletionsArgs;
 use commands::info::InfoArgs;
 use commands::merge::MergeArgs;
@@ -26,6 +27,8 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Manage PDF bookmarks (outline entries)
+    Bookmarks(BookmarksArgs),
     /// Generate shell completion scripts
     Completions(CompletionsArgs),
     /// Show page count, dimensions, and metadata of a PDF
@@ -50,6 +53,7 @@ fn main() {
     let cli = Cli::parse();
 
     let result = match cli.command {
+        Commands::Bookmarks(args) => commands::bookmarks::run(args),
         Commands::Completions(args) => commands::completions::run(args),
         Commands::Info(args) => commands::info::run(args),
         Commands::Meta(args) => commands::meta::run(args),

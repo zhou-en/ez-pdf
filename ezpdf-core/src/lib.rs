@@ -1,4 +1,5 @@
 pub mod batch;
+pub mod bookmarks;
 pub mod error;
 pub mod info;
 pub mod merge;
@@ -13,6 +14,7 @@ pub mod watermark;
 // Re-export watermark module under an alias so tests can access WatermarkOptions
 pub use watermark as watermark_mod;
 
+pub use bookmarks::{add_bookmark, list_bookmarks, Bookmark};
 pub use info::{info, PdfInfo};
 pub use merge::{load_doc_with_password, merge};
 pub use metadata::{get_metadata, set_metadata};

@@ -35,7 +35,8 @@ fn info_json_flag_outputs_parseable_json_with_page_count() {
         .clone();
 
     let text = String::from_utf8(output).unwrap();
-    let parsed: serde_json::Value = serde_json::from_str(&text).expect("stdout should be valid JSON");
+    let parsed: serde_json::Value =
+        serde_json::from_str(&text).expect("stdout should be valid JSON");
     assert_eq!(parsed["page_count"], 3);
 }
 

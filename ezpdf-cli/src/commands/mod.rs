@@ -1,3 +1,4 @@
+pub mod bookmarks;
 pub mod completions;
 pub mod info;
 pub mod merge;

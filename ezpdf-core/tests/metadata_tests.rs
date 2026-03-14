@@ -1,8 +1,9 @@
 mod common;
 
 use ezpdf_core::{
-    get_metadata, set_metadata,
-    metadata::{PdfMetadata, MetadataUpdate},
+    get_metadata,
+    metadata::{MetadataUpdate, PdfMetadata},
+    set_metadata,
 };
 use std::path::Path;
 use tempfile::NamedTempFile;
@@ -15,8 +16,7 @@ fn write_temp_pdf(data: &[u8]) -> NamedTempFile {
 
 #[test]
 fn get_metadata_on_fixture_returns_no_error() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/3page.pdf");
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/3page.pdf");
     let result = get_metadata(&path);
     assert!(result.is_ok(), "expected Ok, got: {:?}", result);
 }
@@ -28,7 +28,10 @@ fn set_then_get_title_matches() {
 
     set_metadata(
         src.path(),
-        MetadataUpdate { title: Some("Hello World".to_string()), ..Default::default() },
+        MetadataUpdate {
+            title: Some("Hello World".to_string()),
+            ..Default::default()
+        },
         dst.path(),
     )
     .unwrap();
@@ -81,14 +84,25 @@ fn clear_all_wipes_all_fields() {
     let step2 = NamedTempFile::new().unwrap();
     set_metadata(
         step1.path(),
-        MetadataUpdate { clear_all: true, ..Default::default() },
+        MetadataUpdate {
+            clear_all: true,
+            ..Default::default()
+        },
         step2.path(),
     )
     .unwrap();
 
     let meta = get_metadata(step2.path()).unwrap();
-    assert!(meta.title.is_none(), "title should be cleared, got: {:?}", meta.title);
-    assert!(meta.author.is_none(), "author should be cleared, got: {:?}", meta.author);
+    assert!(
+        meta.title.is_none(),
+        "title should be cleared, got: {:?}",
+        meta.title
+    );
+    assert!(
+        meta.author.is_none(),
+        "author should be cleared, got: {:?}",
+        meta.author
+    );
 }
 
 // Shape check: PdfMetadata must have all required fields

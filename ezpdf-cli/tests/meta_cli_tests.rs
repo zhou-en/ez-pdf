@@ -23,7 +23,12 @@ fn meta_get_exits_zero_and_prints_fields() {
 fn meta_get_json_is_valid_json() {
     let output = Command::cargo_bin("ezpdf")
         .unwrap()
-        .args(["meta", "get", "--json", fixture("3page.pdf").to_str().unwrap()])
+        .args([
+            "meta",
+            "get",
+            "--json",
+            fixture("3page.pdf").to_str().unwrap(),
+        ])
         .assert()
         .success()
         .get_output()

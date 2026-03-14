@@ -35,7 +35,10 @@ pub struct MergeArgs {
 
 pub fn run(args: MergeArgs) -> anyhow::Result<()> {
     let inputs: Vec<PathBuf> = if args.batch {
-        let dir = args.files.first().ok_or_else(|| anyhow::anyhow!("No directory specified"))?;
+        let dir = args
+            .files
+            .first()
+            .ok_or_else(|| anyhow::anyhow!("No directory specified"))?;
         collect_pdf_inputs(dir)?
     } else {
         args.files.clone()
@@ -69,7 +72,11 @@ pub fn run(args: MergeArgs) -> anyhow::Result<()> {
     }
 
     print_success(
-        &format!("Merged {} files → {}", resolved.len(), args.output.display()),
+        &format!(
+            "Merged {} files → {}",
+            resolved.len(),
+            args.output.display()
+        ),
         args.quiet,
     );
     Ok(())

@@ -122,7 +122,13 @@ fn pdf_string(dict: &Dictionary, key: &[u8]) -> Option<String> {
     if bytes.starts_with(&[0xFE, 0xFF]) {
         let pairs: Vec<u16> = bytes[2..]
             .chunks(2)
-            .map(|c| if c.len() == 2 { u16::from_be_bytes([c[0], c[1]]) } else { 0 })
+            .map(|c| {
+                if c.len() == 2 {
+                    u16::from_be_bytes([c[0], c[1]])
+                } else {
+                    0
+                }
+            })
             .collect();
         String::from_utf16(&pairs).ok()
     } else {
