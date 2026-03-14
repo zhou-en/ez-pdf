@@ -4,6 +4,7 @@ mod output;
 use clap::{Parser, Subcommand};
 use commands::bookmarks::BookmarksArgs;
 use commands::completions::CompletionsArgs;
+use commands::images::ImagesArgs;
 use commands::info::InfoArgs;
 use commands::merge::MergeArgs;
 use commands::meta::MetaArgs;
@@ -31,6 +32,8 @@ enum Commands {
     Bookmarks(BookmarksArgs),
     /// Generate shell completion scripts
     Completions(CompletionsArgs),
+    /// Extract embedded images from a PDF
+    Images(ImagesArgs),
     /// Show page count, dimensions, and metadata of a PDF
     Info(InfoArgs),
     /// Read or write PDF metadata fields
@@ -55,6 +58,7 @@ fn main() {
     let result = match cli.command {
         Commands::Bookmarks(args) => commands::bookmarks::run(args),
         Commands::Completions(args) => commands::completions::run(args),
+        Commands::Images(args) => commands::images::run(args),
         Commands::Info(args) => commands::info::run(args),
         Commands::Meta(args) => commands::meta::run(args),
         Commands::Merge(args) => commands::merge::run(args),

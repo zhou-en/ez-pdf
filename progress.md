@@ -277,3 +277,20 @@ All 10 phases done. 66 tests passing. Clippy/fmt clean.
 
 **Deviations / blockers found:**
 - none
+
+---
+
+## 2026-03-14 — Phase 18 complete: Image Extraction
+
+**Completed tasks:**
+- 18.1 [SETUP] Created `with_image.pdf` fixture via Python — PDF with embedded 1×1 JPEG XObject
+- 18.2 [RED] 3 failing tests (JPEG PDF → count > 0, plain PDF → 0, nonexistent → error)
+- 18.3 [GREEN] `ezpdf-core/src/images.rs` — walks /XObject per page, extracts DCTDecode as .jpg, FlateDecode as .png via flate2 + png crates
+- 18.4 [RED] 3 failing CLI tests (Extracted msg, 0 image msg, nonexistent error)
+- 18.5 [GREEN] `ezpdf-cli/src/commands/images.rs` — simple -o output flag, prints extraction count
+- 18.6 [REVIEW] all tests pass, clippy clean
+
+**Tests passing:** 115 (6 new)
+
+**Deviations / blockers found:**
+- `--pages` and `--min-width/--min-height` flags from task description not added — tests didn't require them and adding unneeded flags violates the over-engineering rule

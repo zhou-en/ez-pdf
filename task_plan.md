@@ -571,25 +571,25 @@ _None yet. Blockers found during stories will be injected here._
 
 ### Definition of Done
 
-- [ ] `ezpdf images input.pdf -o ./images/` extracts all embedded XObject images
-- [ ] JPEG images saved as `.jpg`, others decoded and saved as `.png`
-- [ ] Files named `page-{N}-image-{M}.jpg` / `.png`
+- [x] `ezpdf images input.pdf -o ./images/` extracts all embedded XObject images
+- [x] JPEG images saved as `.jpg`, others decoded and saved as `.png`
+- [x] Files named `page-{N}-image-{M}.jpg` / `.png`
 
 > [!tip] Skills for this phase
 > - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
 
 ### Tasks
 
-- [ ] **18.1 [SETUP]** Create a test fixture `ezpdf-core/tests/fixtures/with_image.pdf` containing at
+- [x] **18.1 [SETUP]** Create a test fixture `ezpdf-core/tests/fixtures/with_image.pdf` containing at
   least one embedded JPEG XObject. Use lopdf to embed a tiny JPEG (grab any 1×1 pixel JPEG bytes)
   as an `/Image` XObject in a test PDF page. Commit the fixture.
 
-- [ ] **18.2 [RED]** Write failing tests for `ezpdf_core::extract_images(input: &Path, output_dir: &Path) -> Result<u32, EzPdfError>` (returns count of images extracted).
+- [x] **18.2 [RED]** Write failing tests for `ezpdf_core::extract_images(input: &Path, output_dir: &Path) -> Result<u32, EzPdfError>` (returns count of images extracted).
   Tests: (a) extract from `with_image.pdf` → count > 0, at least one file created in output_dir;
   (b) extract from `3page.pdf` (no images) → count == 0, no files created;
   (c) nonexistent input → Io error. Run — must **FAIL**.
 
-- [ ] **18.3 [GREEN]** Create `ezpdf-core/src/images.rs`. Add `flate2 = "1"` dependency.
+- [x] **18.3 [GREEN]** Create `ezpdf-core/src/images.rs`. Add `flate2 = "1"` dependency.
   For each page in `doc.get_pages()`: get page `/Resources` → `/XObject` dictionary.
   For each value, follow the reference → check `/Subtype = /Image`. Get the stream object.
   Check `/Filter`: if `/DCTDecode` → write stream bytes directly as `.jpg`.
@@ -598,15 +598,15 @@ _None yet. Blockers found during stories will be injected here._
   (add `png = "0.17"` dependency). Name files `page-{N}-image-{M}.ext`.
   Create output dir if missing. Return total count. All tests must **PASS**.
 
-- [ ] **18.4 [RED]** Failing CLI tests: `ezpdf images with_image.pdf -o out_dir/` exits 0,
+- [x] **18.4 [RED]** Failing CLI tests: `ezpdf images with_image.pdf -o out_dir/` exits 0,
   stdout contains "Extracted"; `ezpdf images 3page.pdf -o out_dir/` exits 0, stdout contains "0 image".
   Run — must **FAIL**.
 
-- [ ] **18.5 [GREEN]** Create `ezpdf-cli/src/commands/images.rs`. Add `--pages` flag to limit extraction.
+- [x] **18.5 [GREEN]** Create `ezpdf-cli/src/commands/images.rs`. Add `--pages` flag to limit extraction.
   Add `--min-width` / `--min-height` flags (default 10) to skip tiny decorative images.
   All tests must **PASS**.
 
-- [ ] **18.6 [REVIEW]** Run `cargo test --workspace`. Manual demo on a PDF with images.
+- [x] **18.6 [REVIEW]** Run `cargo test --workspace`. Manual demo on a PDF with images.
   Check Phase 18 DoD. Commit `feat: image extraction command (Phase 18)`. Update `progress.md`.
 
 ---

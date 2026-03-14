@@ -1,5 +1,6 @@
 pub mod bookmarks;
 pub mod completions;
+pub mod images;
 pub mod info;
 pub mod merge;
 pub mod meta;
