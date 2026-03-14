@@ -339,34 +339,34 @@ _None yet. Blockers found during stories will be injected here._
 
 ### Definition of Done
 
-- [ ] `--batch` flag works on `rotate`, `remove`, `reorder` (apply operation independently to each PDF in a directory)
-- [ ] `merge --batch DIR/ -o out.pdf` merges all PDFs in a directory into one output file
-- [ ] `split --batch DIR/ -o OUT_DIR/` splits each PDF into its own output subdirectory
-- [ ] Progress bar shown when batch contains > 1 file
+- [x] `--batch` flag works on `rotate`, `remove`, `reorder` (apply operation independently to each PDF in a directory)
+- [x] `merge --batch DIR/ -o out.pdf` merges all PDFs in a directory into one output file
+- [x] `split --batch DIR/ -o OUT_DIR/` splits each PDF into its own output subdirectory
+- [x] Progress bar shown when batch contains > 1 file
 
 > [!tip] Skills for this phase
 > - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
 
 ### Tasks
 
-- [ ] **12.1 [RED]** Write failing tests for `ezpdf_core::batch::collect_pdf_inputs(dir: &Path) -> Result<Vec<PathBuf>, EzPdfError>`.
+- [x] **12.1 [RED]** Write failing tests for `ezpdf_core::batch::collect_pdf_inputs(dir: &Path) -> Result<Vec<PathBuf>, EzPdfError>`.
   Tests: (a) dir with 3 `.pdf` files → returns 3 paths sorted alphabetically;
   (b) dir with mixed `.pdf` and `.txt` files → only `.pdf` included;
   (c) nonexistent dir → `Io` error; (d) empty dir → empty vec (not an error).
   Run `cargo test -p ezpdf-core` — must **FAIL**.
 
-- [ ] **12.2 [GREEN]** Create `ezpdf-core/src/batch.rs`. Implement `collect_pdf_inputs` using
+- [x] **12.2 [GREEN]** Create `ezpdf-core/src/batch.rs`. Implement `collect_pdf_inputs` using
   `std::fs::read_dir`, filtering entries where `.extension() == Some("pdf")`, sorting by filename.
   Export from `lib.rs`. All tests must **PASS**.
 
-- [ ] **12.3 [RED]** Write failing CLI tests for `--batch` on each command:
+- [x] **12.3 [RED]** Write failing CLI tests for `--batch` on each command:
   (a) `ezpdf rotate --batch fixtures_dir/ 90 -o out_dir/` exits 0, output dir contains N PDFs with same names;
   (b) `ezpdf remove --batch fixtures_dir/ 1 -o out_dir/` exits 0;
   (c) `ezpdf merge --batch fixtures_dir/ -o out.pdf` exits 0, output is a single PDF;
   (d) `ezpdf rotate --batch nonexistent/ 90 -o out/` exits 1 with "Error:".
   Use `tempfile::tempdir()` for all output paths. Run — must **FAIL**.
 
-- [ ] **12.4 [GREEN]** Add `batch: bool` to all 5 command `Args` structs with `#[arg(long)]`.
+- [x] **12.4 [GREEN]** Add `batch: bool` to all 5 command `Args` structs with `#[arg(long)]`.
   In each command handler: when `batch` is true, treat the input path as a directory,
   call `collect_pdf_inputs`, create the output directory with `std::fs::create_dir_all`,
   then loop over each input applying the operation. For `merge --batch`: collect all inputs,
@@ -374,11 +374,11 @@ _None yet. Blockers found during stories will be injected here._
   named after the stem. For other commands: apply independently, save to `out_dir/<original_filename>`.
   Show a `ProgressBar` (via `indicatif`) when the batch contains > 1 file. All tests must **PASS**.
 
-- [ ] **12.5 [REFACTOR]** Extract a `run_batch_independent<F>(inputs: Vec<PathBuf>, out_dir: &Path, quiet: bool, op: F)`
+- [x] **12.5 [REFACTOR]** Extract a `run_batch_independent<F>(inputs: Vec<PathBuf>, out_dir: &Path, quiet: bool, op: F)`
   helper in `ezpdf-cli/src/output.rs` to reduce duplication across the 4 independent-file commands.
   `F` has signature `Fn(&Path, &Path) -> Result<(), EzPdfError>`. Clippy clean.
 
-- [ ] **12.6 [REVIEW]** Run `cargo test --workspace`. Manual demo: batch rotate a directory of PDFs.
+- [x] **12.6 [REVIEW]** Run `cargo test --workspace`. Manual demo: batch rotate a directory of PDFs.
   Check Phase 12 DoD. Commit `feat: batch --batch flag (Phase 12)`. Update `progress.md`.
 
 ---

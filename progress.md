@@ -191,3 +191,20 @@ All 10 phases done. 66 tests passing. Clippy/fmt clean.
 
 **Deviations / blockers found:**
 - none
+
+---
+
+## 2026-03-13 — Phase 12 complete: Batch Operations
+
+**Completed tasks:**
+- 12.1 [RED] failing tests for `collect_pdf_inputs`
+- 12.2 [GREEN] `ezpdf-core/src/batch.rs` — collect_pdf_inputs
+- 12.3 [RED] failing CLI tests for --batch on rotate, remove, merge
+- 12.4 [GREEN] --batch flag on all 5 commands; merge collects dir inputs; others use run_batch_independent
+- 12.5 [REFACTOR] extracted `run_batch_independent` helper in output.rs; rotate/remove/reorder use it
+- 12.6 [REVIEW] all tests pass, clippy clean
+
+**Tests passing:** 81 (8 new)
+
+**Deviations / blockers found:**
+- none
