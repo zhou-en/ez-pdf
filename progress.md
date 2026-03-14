@@ -208,3 +208,20 @@ All 10 phases done. 66 tests passing. Clippy/fmt clean.
 
 **Deviations / blockers found:**
 - none
+
+---
+
+## 2026-03-13 — Phase 13 complete: PDF Metadata Read/Write
+
+**Completed tasks:**
+- 13.1 [RED] failing tests for `get_metadata` and `set_metadata`; defined `PdfMetadata` and `MetadataUpdate` structs
+- 13.2 [GREEN] `ezpdf-core/src/metadata.rs` — get_metadata reads Info dict; set_metadata creates/updates Info dict with clear_all support
+- 13.3 [RED] failing CLI tests for `ezpdf meta get` and `ezpdf meta set`
+- 13.4 [GREEN] `ezpdf-cli/src/commands/meta.rs` — nested `get`/`set` subcommands with `--json` and `--title/--author/...` flags
+- 13.5 [REFACTOR] aligned key: value output, Serialize on PdfMetadata, clippy clean
+- 13.6 [REVIEW] all tests pass, clippy clean
+
+**Tests passing:** 89 (8 new)
+
+**Deviations / blockers found:**
+- none

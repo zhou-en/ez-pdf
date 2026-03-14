@@ -387,17 +387,17 @@ _None yet. Blockers found during stories will be injected here._
 
 ### Definition of Done
 
-- [ ] `ezpdf meta get input.pdf` prints all metadata fields present in the document
-- [ ] `ezpdf meta set input.pdf --title "..." -o output.pdf` updates selected fields and saves
-- [ ] Round-trip: `set` then `get` returns the values that were set
-- [ ] `ezpdf meta get input.pdf --json` outputs valid JSON
+- [x] `ezpdf meta get input.pdf` prints all metadata fields present in the document
+- [x] `ezpdf meta set input.pdf --title "..." -o output.pdf` updates selected fields and saves
+- [x] Round-trip: `set` then `get` returns the values that were set
+- [x] `ezpdf meta get input.pdf --json` outputs valid JSON
 
 > [!tip] Skills for this phase
 > - **All [RED] and [GREEN] tasks** → invoke `superpowers:test-driven-development` skill
 
 ### Tasks
 
-- [ ] **13.1 [RED]** Write failing tests for `ezpdf_core::get_metadata(input: &Path) -> Result<PdfMetadata, EzPdfError>`
+- [x] **13.1 [RED]** Write failing tests for `ezpdf_core::get_metadata(input: &Path) -> Result<PdfMetadata, EzPdfError>`
   and `ezpdf_core::set_metadata(input: &Path, updates: MetadataUpdate, output: &Path) -> Result<(), EzPdfError>`.
   Define `PdfMetadata` struct (all fields `Option<String>`: title, author, subject, keywords, creator, producer)
   and `MetadataUpdate` struct (same optional fields plus `clear_all: bool`).
@@ -405,26 +405,26 @@ _None yet. Blockers found during stories will be injected here._
   (c) set multiple fields in one call → all updated; (d) `clear_all: true` wipes all fields.
   Run — must **FAIL**.
 
-- [ ] **13.2 [GREEN]** Create `ezpdf-core/src/metadata.rs`. Implement `get_metadata`: follow
+- [x] **13.2 [GREEN]** Create `ezpdf-core/src/metadata.rs`. Implement `get_metadata`: follow
   `doc.trailer.get(b"Info")` reference chain to the Info dictionary; read each field.
   Implement `set_metadata`: load doc, get or create the Info dictionary, update only `Some` fields,
   save with `doc.save(output)?`. Handle the case where no Info dict exists (create one, add to trailer).
   Export from `lib.rs`. All tests must **PASS**.
 
-- [ ] **13.3 [RED]** Failing CLI tests: `ezpdf meta get input.pdf` exits 0 and stdout contains field names;
+- [x] **13.3 [RED]** Failing CLI tests: `ezpdf meta get input.pdf` exits 0 and stdout contains field names;
   `ezpdf meta get input.pdf --json` exits 0 and stdout is valid JSON;
   `ezpdf meta set input.pdf --title "Test" -o out.pdf` exits 0;
   then `ezpdf meta get out.pdf` shows "Test". Run — must **FAIL**.
 
-- [ ] **13.4 [GREEN]** Create `ezpdf-cli/src/commands/meta.rs` with nested clap subcommands `get` and `set`.
+- [x] **13.4 [GREEN]** Create `ezpdf-cli/src/commands/meta.rs` with nested clap subcommands `get` and `set`.
   `GetArgs { file: PathBuf, json: bool }`. `SetArgs { file: PathBuf, output: PathBuf, title: Option<String>,
   author: Option<String>, subject: Option<String>, keywords: Option<String>, clear_all: bool }`.
   All tests must **PASS**.
 
-- [ ] **13.5 [REFACTOR]** For `meta get` normal output: print as aligned key: value pairs, skip None fields.
+- [x] **13.5 [REFACTOR]** For `meta get` normal output: print as aligned key: value pairs, skip None fields.
   Derive `Serialize` on `PdfMetadata` for JSON output. Clippy clean.
 
-- [ ] **13.6 [REVIEW]** Run `cargo test --workspace`. Round-trip demo. Check Phase 13 DoD.
+- [x] **13.6 [REVIEW]** Run `cargo test --workspace`. Round-trip demo. Check Phase 13 DoD.
   Commit `feat: ezpdf meta command (Phase 13)`. Update `progress.md`.
 
 ---
