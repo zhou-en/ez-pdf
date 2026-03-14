@@ -6,3 +6,4 @@ pub mod remove;
 pub mod reorder;
 pub mod rotate;
 pub mod split;
+pub mod watermark;

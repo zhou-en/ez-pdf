@@ -10,6 +10,7 @@ use commands::remove::RemoveArgs;
 use commands::reorder::ReorderArgs;
 use commands::rotate::RotateArgs;
 use commands::split::SplitArgs;
+use commands::watermark::WatermarkArgs;
 
 #[derive(Parser)]
 #[command(
@@ -41,6 +42,8 @@ enum Commands {
     Rotate(RotateArgs),
     /// Extract a page range or burst into individual pages
     Split(SplitArgs),
+    /// Stamp a diagonal text watermark onto pages
+    Watermark(WatermarkArgs),
 }
 
 fn main() {
@@ -55,6 +58,7 @@ fn main() {
         Commands::Reorder(args) => commands::reorder::run(args),
         Commands::Rotate(args) => commands::rotate::run(args),
         Commands::Split(args) => commands::split::run(args),
+        Commands::Watermark(args) => commands::watermark::run(args),
     };
 
     if let Err(e) = result {
