@@ -4,3 +4,5 @@ Cargo.lock
 *.pdb
 ralph-loop.log
 *.log
+node_modules/
+dist/
