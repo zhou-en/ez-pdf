@@ -46,7 +46,7 @@ describe('App', () => {
     dropHandler!(['/home/user/doc.pdf']);
 
     const runBtn = screen.getByRole('button', { name: /run/i });
-    expect(runBtn).not.toBeDisabled();
+    await vi.waitFor(() => expect(runBtn).not.toBeDisabled());
   });
 
   it('clicking Run with merge op calls cmdMerge with inputs and output', async () => {

@@ -756,7 +756,7 @@ _None yet. Blockers found during stories will be injected here._
       Run `pnpm test` — all 6 must **FAIL**.
       Commit: `test(app): failing App integration tests`.
 
-- [ ] **20.10 [GREEN]** Implement `App.svelte` wiring.
+- [x] **20.10 [GREEN]** Implement `App.svelte` wiring.
       State: `files: string[]`, `selectedOp: string`, `options: Record<string, unknown>`, `status: {type: 'idle'|'success'|'error', message: string}`.
       Compose `<Sidebar>`, `<DropZone>`, `<FileList>`, `<OptionsPanel>` components.
       On `filesAdded`: append to `files`. Compute default output path from first input + op suffix using `defaultOutput()` helper. Disable Run button when `files.length === 0`. On Run: call the matching `cmdX` from `lib/tauri.ts`; on resolve set status to success with message; on reject set status to error.
