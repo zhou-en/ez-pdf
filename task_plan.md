@@ -668,7 +668,7 @@ _None yet. Blockers found during stories will be injected here._
 
 ### Tasks
 
-- [ ] **20.1 [SETUP]** Scaffold Tauri v2 Rust layer in `ezpdf-app/`.
+- [x] **20.1 [SETUP]** Scaffold Tauri v2 Rust layer in `ezpdf-app/`.
       Update `ezpdf-app/Cargo.toml`: add `tauri = "2"`, `tauri-plugin-fs = "2"`, `tauri-plugin-dialog = "2"`, `ezpdf-core = { path = "../ezpdf-core" }` to `[dependencies]`; add `tauri-build = "2"` to `[build-dependencies]`; add `tauri = { version = "2", features = ["test"] }` to `[dev-dependencies]`.
       Create `ezpdf-app/build.rs`: `fn main() { tauri_build::build() }`.
       Create `ezpdf-app/tauri.conf.json` with `productName = "ezpdf"`, `identifier = "com.ezpdf.app"`, `devUrl = "http://localhost:1420"`, `frontendDist = "frontend/dist"`, window 900×600, `dragDropEnabled = true`.
@@ -677,7 +677,7 @@ _None yet. Blockers found during stories will be injected here._
       Create `ezpdf-app/src/main.rs` that calls `ezpdf_app::run()`.
       Verify: `cargo build -p ezpdf-app` exits 0.
 
-- [ ] **20.2 [RED]** Write 6 failing Rust unit tests for Tauri commands in `ezpdf-app/src/lib.rs` `#[cfg(test)]` module. Call command functions directly (no Tauri runtime needed):
+- [x] **20.2 [RED]** Write 6 failing Rust unit tests for Tauri commands in `ezpdf-app/src/lib.rs` `#[cfg(test)]` module. Call command functions directly (no Tauri runtime needed):
       1. `cmd_merge_combines_files` — merge `3page.pdf` + `5page.pdf` → output has 8 pages
       2. `cmd_merge_missing_input_returns_err` — nonexistent path returns `Err`
       3. `cmd_split_range_produces_correct_pages` — split range "1-3" from 5-page PDF → 3-page output
