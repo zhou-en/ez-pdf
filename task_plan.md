@@ -699,7 +699,7 @@ _None yet. Blockers found during stories will be injected here._
       Run `cargo test -p ezpdf-app` — all 6 must **PASS**.
       Commit: `feat(app): Tauri commands wrapping ezpdf-core (6 tests pass)`.
 
-- [ ] **20.4 [SETUP]** Scaffold Svelte 5 + Vite + Vitest frontend in `ezpdf-app/frontend/`.
+- [x] **20.4 [SETUP]** Scaffold Svelte 5 + Vite + Vitest frontend in `ezpdf-app/frontend/`.
       Create `package.json` with scripts `dev`, `build`, `test`, `tauri`; runtime deps `@tauri-apps/api ^2`, `@tauri-apps/plugin-fs ^2`, `@tauri-apps/plugin-dialog ^2`, `svelte ^5`; devDeps `@sveltejs/vite-plugin-svelte ^4`, `@tauri-apps/cli ^2`, `typescript ^5`, `vite ^6`, `vitest`, `@testing-library/svelte`, `@testing-library/jest-dom`, `jsdom`.
       Create `vite.config.ts`: port 1420, `clearScreen: false`, Tauri env prefixes, `svelte()` plugin.
       Create `vitest.config.ts`: `environment: 'jsdom'`, `setupFiles: ['src/test-setup.ts']`, `svelteTesting()` plugin.
