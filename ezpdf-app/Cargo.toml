@@ -2,7 +2,18 @@
 name = "ezpdf-app"
 version = "0.1.0"
 edition = "2021"
-description = "Desktop app placeholder for ezpdf (Tauri v2 + Svelte — v2)"
+description = "Desktop app for ezpdf (Tauri v2 + Svelte 5)"
 license = "MIT"
 
 [dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-fs = "2"
+tauri-plugin-dialog = "2"
+ezpdf-core = { path = "../ezpdf-core" }
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dev-dependencies]
+tauri = { version = "2", features = ["test"] }
+tempfile = "3"

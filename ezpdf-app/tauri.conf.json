@@ -1,0 +1,29 @@
+{
+  "productName": "ezpdf",
+  "version": "0.1.0",
+  "identifier": "com.ezpdf.app",
+  "build": {
+    "beforeDevCommand": "pnpm --prefix frontend dev",
+    "beforeBuildCommand": "pnpm --prefix frontend build",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "frontend/dist"
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": []
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "ezpdf",
+        "width": 900,
+        "height": 600,
+        "dragDropEnabled": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  }
+}
