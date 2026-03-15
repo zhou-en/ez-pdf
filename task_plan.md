@@ -725,7 +725,7 @@ _None yet. Blockers found during stories will be injected here._
       Run `pnpm test` — DropZone tests must **PASS**.
       Commit: `feat(app): DropZone component with Tauri drag-and-drop`.
 
-- [ ] **20.7 [RED]** Write 8 failing Vitest tests for `Sidebar` and `OptionsPanel`.
+- [x] **20.7 [RED]** Write 8 failing Vitest tests for `Sidebar` and `OptionsPanel`.
       Sidebar (`src/components/Sidebar.test.ts`):
       1. renders 5 op buttons: Merge, Split, Remove, Rotate, Reorder
       2. clicking an op dispatches `opSelected` event with the op name
