@@ -720,7 +720,7 @@ _None yet. Blockers found during stories will be injected here._
       Run `pnpm test` — all 4 must **FAIL**.
       Commit: `test(app): failing DropZone component tests`.
 
-- [ ] **20.6 [GREEN]** Implement `DropZone.svelte`.
+- [x] **20.6 [GREEN]** Implement `DropZone.svelte`.
       On mount call `onFileDrop()` from `lib/dnd.ts`, filter to `.pdf` files only, dispatch `filesAdded` custom event with paths array. Show visual drop target text. On destroy call `unlisten()`.
       Run `pnpm test` — DropZone tests must **PASS**.
       Commit: `feat(app): DropZone component with Tauri drag-and-drop`.

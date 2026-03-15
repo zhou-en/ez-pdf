@@ -21,20 +21,16 @@ describe('DropZone', () => {
     expect(screen.getByText(/drop pdf files here/i)).toBeInTheDocument();
   });
 
-  it('emits filesAdded event when onFileDrop callback fires with pdf paths', async () => {
+  it('calls onfilesAdded callback when onFileDrop fires with pdf paths', async () => {
     let capturedHandler: ((paths: string[]) => void) | undefined;
     mockOnFileDrop.mockImplementation(async (handler) => {
       capturedHandler = handler;
       return vi.fn();
     });
 
-    const { component } = render(DropZone);
     const received: string[][] = [];
-    component.$on('filesAdded', (e: CustomEvent<string[]>) => {
-      received.push(e.detail);
-    });
+    render(DropZone, { onfilesAdded: (paths: string[]) => received.push(paths) });
 
-    // Wait for onMount to call onFileDrop
     await vi.waitFor(() => expect(capturedHandler).toBeDefined());
     capturedHandler!(['/home/user/doc.pdf', '/home/user/report.pdf']);
 
@@ -49,11 +45,8 @@ describe('DropZone', () => {
       return vi.fn();
     });
 
-    const { component } = render(DropZone);
     const received: string[][] = [];
-    component.$on('filesAdded', (e: CustomEvent<string[]>) => {
-      received.push(e.detail);
-    });
+    render(DropZone, { onfilesAdded: (paths: string[]) => received.push(paths) });
 
     await vi.waitFor(() => expect(capturedHandler).toBeDefined());
     capturedHandler!(['/home/user/doc.pdf', '/home/user/image.png', '/home/user/notes.txt']);
