@@ -16,15 +16,13 @@ pub fn cmd_split_range(input: String, range: String, output: String) -> Result<S
 
 #[tauri::command]
 pub fn cmd_split_each(input: String, output_dir: String) -> Result<String, String> {
-    ezpdf_core::split_each(Path::new(&input), Path::new(&output_dir))
-        .map_err(|e| e.to_string())?;
+    ezpdf_core::split_each(Path::new(&input), Path::new(&output_dir)).map_err(|e| e.to_string())?;
     Ok(format!("Split each page → {}", output_dir))
 }
 
 #[tauri::command]
 pub fn cmd_remove(input: String, pages: String, output: String) -> Result<String, String> {
-    ezpdf_core::remove(Path::new(&input), &pages, Path::new(&output))
-        .map_err(|e| e.to_string())?;
+    ezpdf_core::remove(Path::new(&input), &pages, Path::new(&output)).map_err(|e| e.to_string())?;
     Ok(format!("Removed pages {} → {}", pages, output))
 }
 

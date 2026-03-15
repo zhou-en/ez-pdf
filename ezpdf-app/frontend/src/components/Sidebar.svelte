@@ -20,3 +20,35 @@
     </button>
   {/each}
 </aside>
+
+<style>
+  .sidebar {
+    width: 140px;
+    background: #1e293b;
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem 0;
+  }
+
+  button {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    padding: 0.6rem 1rem;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.875rem;
+    border-left: 3px solid transparent;
+  }
+
+  button:hover {
+    color: #e2e8f0;
+    background: #334155;
+  }
+
+  button.active {
+    color: #e2e8f0;
+    border-left-color: #3b82f6;
+    background: #334155;
+  }
+</style>

@@ -48,7 +48,10 @@
   }
 
   async function run() {
-    if (files.length === 0) return;
+    if (files.length === 0) {
+      status = { type: 'error', message: 'Add at least one PDF file.' };
+      return;
+    }
     running = true;
     status = { type: 'idle', message: '' };
     try {
@@ -94,8 +97,12 @@
 
     <OptionsPanel op={selectedOp} />
 
-    <button onclick={run} disabled={files.length === 0 || running}>
-      Run {selectedOp.charAt(0).toUpperCase() + selectedOp.slice(1)}
+    <button class="run-btn" onclick={run} disabled={files.length === 0 || running}>
+      {#if running}
+        Running…
+      {:else}
+        Run {selectedOp.charAt(0).toUpperCase() + selectedOp.slice(1)}
+      {/if}
     </button>
 
     {#if status.type !== 'idle'}
@@ -103,3 +110,70 @@
     {/if}
   </main>
 </div>
+
+<style>
+  .app {
+    display: flex;
+    height: 100vh;
+    font-family: system-ui, sans-serif;
+  }
+
+  main {
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .file-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .file-list li {
+    padding: 0.25rem 0.5rem;
+    background: #f3f4f6;
+    border-radius: 4px;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+  }
+
+  .run-btn {
+    align-self: flex-start;
+    padding: 0.5rem 1.5rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .run-btn:disabled {
+    background: #93c5fd;
+    cursor: not-allowed;
+  }
+
+  .run-btn:not(:disabled):hover {
+    background: #1d4ed8;
+  }
+
+  .status {
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    margin: 0;
+  }
+
+  .status.success {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .status.error {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+</style>

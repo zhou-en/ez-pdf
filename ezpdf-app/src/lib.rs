@@ -18,9 +18,9 @@ pub fn run() {
 
 #[cfg(test)]
 mod tests {
+    use crate::commands::*;
     use std::path::PathBuf;
     use tempfile::TempDir;
-    use crate::commands::*;
 
     fn fixtures_dir() -> PathBuf {
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -70,7 +70,11 @@ mod tests {
     #[test]
     fn cmd_remove_removes_pages() {
         let tmp = TempDir::new().unwrap();
-        let output = tmp.path().join("removed.pdf").to_string_lossy().into_owned();
+        let output = tmp
+            .path()
+            .join("removed.pdf")
+            .to_string_lossy()
+            .into_owned();
         let result = cmd_remove(fixture("3page.pdf"), "2".to_string(), output.clone());
         assert!(result.is_ok(), "expected Ok, got: {:?}", result);
         assert_eq!(page_count(&output), 2);
@@ -79,7 +83,11 @@ mod tests {
     #[test]
     fn cmd_rotate_rotates_all_pages() {
         let tmp = TempDir::new().unwrap();
-        let output = tmp.path().join("rotated.pdf").to_string_lossy().into_owned();
+        let output = tmp
+            .path()
+            .join("rotated.pdf")
+            .to_string_lossy()
+            .into_owned();
         let result = cmd_rotate(fixture("3page.pdf"), 90, None, output.clone());
         assert!(result.is_ok(), "expected Ok, got: {:?}", result);
         assert_eq!(page_count(&output), 3);
@@ -88,7 +96,11 @@ mod tests {
     #[test]
     fn cmd_reorder_changes_page_order() {
         let tmp = TempDir::new().unwrap();
-        let output = tmp.path().join("reordered.pdf").to_string_lossy().into_owned();
+        let output = tmp
+            .path()
+            .join("reordered.pdf")
+            .to_string_lossy()
+            .into_owned();
         let result = cmd_reorder(fixture("3page.pdf"), "3,1,2".to_string(), output.clone());
         assert!(result.is_ok(), "expected Ok, got: {:?}", result);
         assert_eq!(page_count(&output), 3);
