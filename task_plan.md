@@ -688,7 +688,7 @@ _None yet. Blockers found during stories will be injected here._
       Run `cargo test -p ezpdf-app` — all 6 must **FAIL**.
       Commit: `test(app): failing tests for 6 Tauri commands`.
 
-- [ ] **20.3 [GREEN]** Implement 6 Tauri commands in `ezpdf-app/src/lib.rs` — minimum to pass tests.
+- [x] **20.3 [GREEN]** Implement 6 Tauri commands in `ezpdf-app/src/lib.rs` — minimum to pass tests.
       Add `cmd_merge(inputs: Vec<String>, output: String) -> Result<String, String>`,
       `cmd_split_range(input: String, range: String, output: String) -> Result<String, String>`,
       `cmd_split_each(input: String, output_dir: String) -> Result<String, String>`,
