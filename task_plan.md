@@ -653,21 +653,131 @@ _None yet. Blockers found during stories will be injected here._
 
 ---
 
-## Phase 20: Desktop App (ezpdf-app)
+## Phase 20: Desktop App (Tauri v2 + Svelte 5)
 
-> **TODO — Requires separate planning before ralph can implement this.**
->
-> The desktop app (Tauri v2 + Svelte 5) requires a different toolchain (Node.js, npm, Tauri CLI)
-> and substantial UI/UX design decisions that benefit from human input before automating.
->
-> **Before activating this phase:**
-> 1. Run `/ce:brainstorm` for the desktop app to produce `docs/brainstorms/YYYY-MM-DD-ezpdf-app-brainstorm.md`
-> 2. Run `/ce:plan` to convert the brainstorm into detailed tasks in this phase
-> 3. Replace this note with the resulting tasks, then run ralph
->
-> Phase 20 tasks are intentionally left unchecked here so the completion signal fires after phases 11–19.
+> Plan: `docs/plans/2026-03-14-001-feat-desktop-app-tauri-svelte-plan.md`
+> Brainstorm: `docs/brainstorms/2026-03-14-desktop-app-brainstorm.md`
 
-- [x] **20.0 [TODO]** Desktop app planning deferred — see note above. Phases 11–19 complete the CLI backlog.
+### Definition of Done
+
+- [ ] `cargo test -p ezpdf-app` passes — all 6 Tauri command unit tests green
+- [ ] `cd ezpdf-app/frontend && pnpm test` passes — all Vitest component tests green
+- [ ] `cd ezpdf-app && cargo tauri build` exits 0
+- [ ] Manual smoke test: all 5 ops work in the running app
+- [ ] No `unwrap()`/`expect()` in `ezpdf-app/src/lib.rs`; clippy/fmt clean
+
+### Tasks
+
+- [ ] **20.1 [SETUP]** Scaffold Tauri v2 Rust layer in `ezpdf-app/`.
+      Update `ezpdf-app/Cargo.toml`: add `tauri = "2"`, `tauri-plugin-fs = "2"`, `tauri-plugin-dialog = "2"`, `ezpdf-core = { path = "../ezpdf-core" }` to `[dependencies]`; add `tauri-build = "2"` to `[build-dependencies]`; add `tauri = { version = "2", features = ["test"] }` to `[dev-dependencies]`.
+      Create `ezpdf-app/build.rs`: `fn main() { tauri_build::build() }`.
+      Create `ezpdf-app/tauri.conf.json` with `productName = "ezpdf"`, `identifier = "com.ezpdf.app"`, `devUrl = "http://localhost:1420"`, `frontendDist = "frontend/dist"`, window 900×600, `dragDropEnabled = true`.
+      Create `ezpdf-app/capabilities/default.json` with permissions: `core:default`, `dialog:allow-open`, `dialog:allow-save`, `fs:allow-read-file`, `fs:allow-write-file`.
+      Replace `ezpdf-app/src/lib.rs` with a `pub fn run()` scaffold that calls `tauri::Builder::default().run(tauri::generate_context!()).unwrap()`.
+      Create `ezpdf-app/src/main.rs` that calls `ezpdf_app::run()`.
+      Verify: `cargo build -p ezpdf-app` exits 0.
+
+- [ ] **20.2 [RED]** Write 6 failing Rust unit tests for Tauri commands in `ezpdf-app/src/lib.rs` `#[cfg(test)]` module. Call command functions directly (no Tauri runtime needed):
+      1. `cmd_merge_combines_files` — merge `3page.pdf` + `5page.pdf` → output has 8 pages
+      2. `cmd_merge_missing_input_returns_err` — nonexistent path returns `Err`
+      3. `cmd_split_range_produces_correct_pages` — split range "1-3" from 5-page PDF → 3-page output
+      4. `cmd_remove_removes_pages` — remove page "2" from 3-page PDF → 2-page output
+      5. `cmd_rotate_rotates_all_pages` — rotate 90° on 3-page PDF → succeeds, returns `Ok`
+      6. `cmd_reorder_changes_page_order` — reorder "3,1,2" on 3-page PDF → succeeds, returns `Ok`
+      Use existing test fixtures from `ezpdf-core/tests/fixtures/` (3page.pdf, 5page.pdf).
+      Run `cargo test -p ezpdf-app` — all 6 must **FAIL**.
+      Commit: `test(app): failing tests for 6 Tauri commands`.
+
+- [ ] **20.3 [GREEN]** Implement 6 Tauri commands in `ezpdf-app/src/lib.rs` — minimum to pass tests.
+      Add `cmd_merge(inputs: Vec<String>, output: String) -> Result<String, String>`,
+      `cmd_split_range(input: String, range: String, output: String) -> Result<String, String>`,
+      `cmd_split_each(input: String, output_dir: String) -> Result<String, String>`,
+      `cmd_remove(input: String, pages: String, output: String) -> Result<String, String>`,
+      `cmd_rotate(input: String, degrees: i32, pages: Option<String>, output: String) -> Result<String, String>`,
+      `cmd_reorder(input: String, order: String, output: String) -> Result<String, String>`.
+      Each converts String paths to `&Path`, calls the matching `ezpdf_core::*` function, returns `Ok(success_msg)` or `Err(e.to_string())`. Register all in `invoke_handler` and init plugins in `run()`.
+      Run `cargo test -p ezpdf-app` — all 6 must **PASS**.
+      Commit: `feat(app): Tauri commands wrapping ezpdf-core (6 tests pass)`.
+
+- [ ] **20.4 [SETUP]** Scaffold Svelte 5 + Vite + Vitest frontend in `ezpdf-app/frontend/`.
+      Create `package.json` with scripts `dev`, `build`, `test`, `tauri`; runtime deps `@tauri-apps/api ^2`, `@tauri-apps/plugin-fs ^2`, `@tauri-apps/plugin-dialog ^2`, `svelte ^5`; devDeps `@sveltejs/vite-plugin-svelte ^4`, `@tauri-apps/cli ^2`, `typescript ^5`, `vite ^6`, `vitest`, `@testing-library/svelte`, `@testing-library/jest-dom`, `jsdom`.
+      Create `vite.config.ts`: port 1420, `clearScreen: false`, Tauri env prefixes, `svelte()` plugin.
+      Create `vitest.config.ts`: `environment: 'jsdom'`, `setupFiles: ['src/test-setup.ts']`, `svelteTesting()` plugin.
+      Create `src/test-setup.ts`: `import '@testing-library/jest-dom/vitest'`.
+      Create `src/main.ts` mounting App; `src/App.svelte` placeholder `<h1>ezpdf</h1>`.
+      Create `src/lib/tauri.ts` with typed `invoke()` wrappers: `cmdMerge`, `cmdSplitRange`, `cmdSplitEach`, `cmdRemove`, `cmdRotate`, `cmdReorder`.
+      Create `src/lib/dnd.ts` with `onFileDrop(handler)` wrapping `getCurrentWebview().onDragDropEvent()` with `lastPaths` deduplication guard.
+      Create stub components: `src/components/Sidebar.svelte`, `DropZone.svelte`, `FileList.svelte`, `OptionsPanel.svelte`.
+      Run `pnpm install && pnpm build` — succeeds.
+      Commit: `chore(app): Svelte 5 + Vite + Vitest scaffold`.
+
+- [ ] **20.5 [RED]** Write 4 failing Vitest tests for `DropZone` in `src/components/DropZone.test.ts`.
+      Mock `../lib/dnd` with `vi.mock`. Tests:
+      1. renders drop zone with "Drop PDF files here" text
+      2. emits `filesAdded` event when `onFileDrop` callback fires with `.pdf` paths
+      3. filters out non-PDF paths from the drop event
+      4. shows dropped file basenames in the component
+      Run `pnpm test` — all 4 must **FAIL**.
+      Commit: `test(app): failing DropZone component tests`.
+
+- [ ] **20.6 [GREEN]** Implement `DropZone.svelte`.
+      On mount call `onFileDrop()` from `lib/dnd.ts`, filter to `.pdf` files only, dispatch `filesAdded` custom event with paths array. Show visual drop target text. On destroy call `unlisten()`.
+      Run `pnpm test` — DropZone tests must **PASS**.
+      Commit: `feat(app): DropZone component with Tauri drag-and-drop`.
+
+- [ ] **20.7 [RED]** Write 8 failing Vitest tests for `Sidebar` and `OptionsPanel`.
+      Sidebar (`src/components/Sidebar.test.ts`):
+      1. renders 5 op buttons: Merge, Split, Remove, Rotate, Reorder
+      2. clicking an op dispatches `opSelected` event with the op name
+      3. selected op has an `active` CSS class
+      OptionsPanel (`src/components/OptionsPanel.test.ts`):
+      4. merge panel: renders without op-specific inputs
+      5. split panel: shows mode toggle (range/burst) and range input
+      6. remove panel: shows pages text input
+      7. rotate panel: shows degrees `<select>` and optional pages input
+      8. reorder panel: shows order text input
+      Run `pnpm test` — all 8 must **FAIL**.
+      Commit: `test(app): failing Sidebar and OptionsPanel tests`.
+
+- [ ] **20.8 [GREEN]** Implement `Sidebar.svelte` and `OptionsPanel.svelte`.
+      `Sidebar.svelte`: 5 op buttons, dispatch `opSelected` event on click, apply `active` class to selected op.
+      `OptionsPanel.svelte`: conditional rendering by `op` prop — merge (nothing extra), split (radio range/burst + range input), remove (pages input), rotate (degrees `<select>` with 90/180/270/-90 + pages input), reorder (order input).
+      Run `pnpm test` — all 8 tests must **PASS**.
+      Commit: `feat(app): Sidebar and OptionsPanel components`.
+
+- [ ] **20.9 [RED]** Write 6 failing Vitest tests for `App` integration in `src/App.test.ts`.
+      Mock `vi.mock('../lib/tauri', ...)` with all cmd* functions as `vi.fn()`.
+      1. Run button is disabled when no files are loaded
+      2. Run button is enabled after files are added via `filesAdded` event
+      3. Clicking Run with merge op calls `cmdMerge` with correct inputs and output args
+      4. Success result from `cmdMerge` appears in status bar
+      5. Error result from `cmdMerge` appears in status bar as error text
+      6. Default output path is same folder as first input with `-merged.pdf` suffix
+      Run `pnpm test` — all 6 must **FAIL**.
+      Commit: `test(app): failing App integration tests`.
+
+- [ ] **20.10 [GREEN]** Implement `App.svelte` wiring.
+      State: `files: string[]`, `selectedOp: string`, `options: Record<string, unknown>`, `status: {type: 'idle'|'success'|'error', message: string}`.
+      Compose `<Sidebar>`, `<DropZone>`, `<FileList>`, `<OptionsPanel>` components.
+      On `filesAdded`: append to `files`. Compute default output path from first input + op suffix using `defaultOutput()` helper. Disable Run button when `files.length === 0`. On Run: call the matching `cmdX` from `lib/tauri.ts`; on resolve set status to success with message; on reject set status to error.
+      For `split_each` burst mode: use `@tauri-apps/plugin-dialog` to open a folder picker for the output directory.
+      Run `pnpm test` — all 6 App tests must **PASS**.
+      Also run `cargo test -p ezpdf-app` — still green.
+      Commit: `feat(app): App.svelte wires all 5 operations to Tauri commands`.
+
+- [ ] **20.11 [REFACTOR]** Polish, validation, and cleanup.
+      Add CSS: sidebar active highlight, drop zone hover state, status bar colour (green/red), button loading spinner during Run. Add inline validation: if Run clicked with no files show "Add at least one PDF file" message. Remove any `console.log` statements. Ensure no `unwrap()`/`expect()` anywhere in `ezpdf-app/src/lib.rs`. Run `cargo fmt --check` and `cargo clippy --workspace -- -D warnings` — both clean. Run `pnpm test` — still passing.
+      Commit: `refactor(app): UI polish, validation, clippy clean`.
+
+- [ ] **20.12 [REVIEW]** Validate Definition of Done.
+      Run `cargo test -p ezpdf-app` — paste output (6+ tests pass).
+      Run `cd ezpdf-app/frontend && pnpm test` — paste output (all Vitest tests pass).
+      Run `cd ezpdf-app && cargo tauri build` — must exit 0.
+      Manual smoke test: launch app with `cargo tauri dev`, drop a PDF, run merge, verify output file is created.
+      Run `cargo clippy --workspace -- -D warnings` — clean.
+      Append Phase 20 section to `progress.md`.
+      Commit: `chore: Phase 20 complete — desktop app (Tauri v2 + Svelte 5)`.
+      Output completion signal: `<promise>EZPDF BACKLOG COMPLETE</promise>`.
 
 ---
 
