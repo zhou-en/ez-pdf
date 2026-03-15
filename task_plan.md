@@ -765,11 +765,11 @@ _None yet. Blockers found during stories will be injected here._
       Also run `cargo test -p ezpdf-app` — still green.
       Commit: `feat(app): App.svelte wires all 5 operations to Tauri commands`.
 
-- [ ] **20.11 [REFACTOR]** Polish, validation, and cleanup.
+- [x] **20.11 [REFACTOR]** Polish, validation, and cleanup.
       Add CSS: sidebar active highlight, drop zone hover state, status bar colour (green/red), button loading spinner during Run. Add inline validation: if Run clicked with no files show "Add at least one PDF file" message. Remove any `console.log` statements. Ensure no `unwrap()`/`expect()` anywhere in `ezpdf-app/src/lib.rs`. Run `cargo fmt --check` and `cargo clippy --workspace -- -D warnings` — both clean. Run `pnpm test` — still passing.
       Commit: `refactor(app): UI polish, validation, clippy clean`.
 
-- [ ] **20.12 [REVIEW]** Validate Definition of Done.
+- [x] **20.12 [REVIEW]** Validate Definition of Done.
       Run `cargo test -p ezpdf-app` — paste output (6+ tests pass).
       Run `cd ezpdf-app/frontend && pnpm test` — paste output (all Vitest tests pass).
       Run `cd ezpdf-app && cargo tauri build` — must exit 0.

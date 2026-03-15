@@ -311,3 +311,28 @@ All 10 phases done. 66 tests passing. Clippy/fmt clean.
 
 **Deviations / blockers found:**
 - none
+
+---
+
+## 2026-03-15 — Phase 20 complete: Desktop App (Tauri v2 + Svelte 5)
+
+**Completed tasks:**
+- 20.1 [SETUP] `ezpdf-app/` — Tauri v2 workspace member; `build.rs`, `tauri.conf.json`, `capabilities/default.json`, `icons/icon.png` (512×512 RGBA)
+- 20.2 [RED] 6 failing Rust tests: cmd_merge_combines_files, cmd_merge_missing_input_returns_err, cmd_split_range_produces_correct_pages, cmd_remove_removes_pages, cmd_rotate_rotates_all_pages, cmd_reorder_changes_page_order
+- 20.3 [GREEN] `src/commands.rs` — 6 Tauri IPC commands wrapping ezpdf-core; moved to submodule to avoid macro namespace conflicts
+- 20.4 [REVIEW] 6 Rust tests pass, clippy/fmt clean
+- 20.5 [SETUP] Svelte 5 + Vite + Vitest frontend scaffold; `pnpm` workspace; `@testing-library/svelte` v5 with `svelteTesting()` plugin
+- 20.6 [RED] Failing DropZone, Sidebar, OptionsPanel component tests (12 tests)
+- 20.7 [GREEN] DropZone (onFileDrop via `$state`/`$props`), Sidebar (5 op buttons), OptionsPanel (conditional inputs per op)
+- 20.8 [RED] 6 failing App.test.ts integration tests
+- 20.9 [GREEN] App.svelte wired: file list state, OptionsPanel bindings, defaultOutput(), run() IPC dispatch, status bar
+- 20.10 [REVIEW] 18/18 frontend tests pass
+- 20.11 [REFACTOR] DropZone hover CSS, Sidebar active highlight, status bar green/red, run-button styles, inline validation; cargo fmt + clippy -D warnings both clean
+- 20.12 [REVIEW] 6/6 Rust tests + 18/18 Vitest tests + `cargo tauri build` exits 0 → `.app` and `.dmg` bundles produced
+
+**Tests passing:** 121 Rust + 18 frontend = 139 total
+
+**Deviations / blockers found:**
+- `#[tauri::command]` macro conflict resolved by moving commands to `src/commands.rs` submodule
+- `pnpm --prefix frontend` doubled path in tauri beforeBuildCommand — fixed to `pnpm --dir <abs-path>`
+- icon.png required RGBA color type (not RGB) for Tauri v2 `generate_context!()`
