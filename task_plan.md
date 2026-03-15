@@ -745,7 +745,7 @@ _None yet. Blockers found during stories will be injected here._
       Run `pnpm test` — all 8 tests must **PASS**.
       Commit: `feat(app): Sidebar and OptionsPanel components`.
 
-- [ ] **20.9 [RED]** Write 6 failing Vitest tests for `App` integration in `src/App.test.ts`.
+- [x] **20.9 [RED]** Write 6 failing Vitest tests for `App` integration in `src/App.test.ts`.
       Mock `vi.mock('../lib/tauri', ...)` with all cmd* functions as `vi.fn()`.
       1. Run button is disabled when no files are loaded
       2. Run button is enabled after files are added via `filesAdded` event
