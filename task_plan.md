@@ -739,7 +739,7 @@ _None yet. Blockers found during stories will be injected here._
       Run `pnpm test` — all 8 must **FAIL**.
       Commit: `test(app): failing Sidebar and OptionsPanel tests`.
 
-- [ ] **20.8 [GREEN]** Implement `Sidebar.svelte` and `OptionsPanel.svelte`.
+- [x] **20.8 [GREEN]** Implement `Sidebar.svelte` and `OptionsPanel.svelte`.
       `Sidebar.svelte`: 5 op buttons, dispatch `opSelected` event on click, apply `active` class to selected op.
       `OptionsPanel.svelte`: conditional rendering by `op` prop — merge (nothing extra), split (radio range/burst + range input), remove (pages input), rotate (degrees `<select>` with 90/180/270/-90 + pages input), reorder (order input).
       Run `pnpm test` — all 8 tests must **PASS**.
