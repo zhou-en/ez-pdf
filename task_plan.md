@@ -711,7 +711,7 @@ _None yet. Blockers found during stories will be injected here._
       Run `pnpm install && pnpm build` — succeeds.
       Commit: `chore(app): Svelte 5 + Vite + Vitest scaffold`.
 
-- [ ] **20.5 [RED]** Write 4 failing Vitest tests for `DropZone` in `src/components/DropZone.test.ts`.
+- [x] **20.5 [RED]** Write 4 failing Vitest tests for `DropZone` in `src/components/DropZone.test.ts`.
       Mock `../lib/dnd` with `vi.mock`. Tests:
       1. renders drop zone with "Drop PDF files here" text
       2. emits `filesAdded` event when `onFileDrop` callback fires with `.pdf` paths
