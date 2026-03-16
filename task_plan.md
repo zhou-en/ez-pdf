@@ -28,6 +28,16 @@
 
 - [x] **1.4 [REVIEW]** Run `cargo build --workspace && cargo clippy --workspace -- -D warnings && cargo fmt --check`. All must pass. Verify CI yaml is syntactically valid (`cat .github/workflows/ci.yml`). Check all Phase 1 DoD boxes. Commit all files. Update `progress.md`.
 
+### User Verification
+
+> Confirm the project foundation is solid before adding features.
+
+1. `cargo build --workspace` — must exit 0 with no warnings
+2. `cargo test --workspace` — must exit 0 (0 tests, infrastructure only)
+3. `cargo clippy --workspace -- -D warnings` — must exit 0
+4. `cargo fmt --check` — must exit 0
+5. Push a commit and open GitHub Actions — both `ubuntu-latest` and `macos-latest` jobs must turn green
+
 ---
 
 ## Phase 2: Page Range Parser
@@ -50,6 +60,15 @@
 - [x] **2.3 [REFACTOR]** Review `page_range.rs`: extract helper functions if the parse function is >40 lines. Ensure all `EzPdfError` messages are user-friendly. Run `cargo test -p ezpdf-core` — all tests still pass. Run `cargo clippy -p ezpdf-core -- -D warnings`.
 
 - [x] **2.4 [REVIEW]** Check Phase 2 DoD. Run `cargo test -p ezpdf-core --verbose`. Count tests: should be ≥15 test cases. Commit. Update `progress.md`.
+
+### User Verification
+
+> Confirm the page range parser handles all cases correctly.
+
+1. `cargo test -p ezpdf-core --verbose` — should show ≥15 test cases, all passing
+2. Inspect a sample error message by temporarily adding a quick test or running:
+   `cargo test -p ezpdf-core -- page_range --nocapture 2>&1 | head -30`
+3. Confirm error messages include context (page number, total pages)
 
 ---
 
@@ -80,6 +99,16 @@
 
 - [x] **3.7 [REVIEW]** Run `cargo test --workspace`. Run manual demo. Check Phase 3 DoD. Commit. Update `progress.md`.
 
+### User Verification
+
+> Confirm two PDFs can be merged into one.
+
+1. `cargo run -p ezpdf-cli -- merge ezpdf-core/tests/fixtures/3page.pdf ezpdf-core/tests/fixtures/5page.pdf -o /tmp/merged.pdf`
+   — exits 0, prints "Merged"
+2. `cargo run -p ezpdf-cli -- info /tmp/merged.pdf` (or open in Preview) — confirm 8 pages
+3. `cargo run -p ezpdf-cli -- merge nonexistent.pdf -o /tmp/out.pdf` — exits 1, stderr contains "Error:"
+4. `cargo run -p ezpdf-cli -- merge ezpdf-core/tests/fixtures/3page.pdf ezpdf-core/tests/fixtures/5page.pdf ezpdf-core/tests/fixtures/3page.pdf -o /tmp/merged3.pdf` — 11-page output
+
 ---
 
 ## Phase 4: Remove Command
@@ -106,6 +135,18 @@
 - [x] **4.5 [REFACTOR]** Review error messages. Ensure "cannot remove all pages" includes page count context. Clippy clean.
 
 - [x] **4.6 [REVIEW]** Run `cargo test --workspace`. Manual demo with 10-page fixture. Check DoD. Commit. Update `progress.md`.
+
+### User Verification
+
+> Confirm pages can be removed from a PDF.
+
+1. `cargo run -p ezpdf-cli -- remove ezpdf-core/tests/fixtures/5page.pdf "2,4" -o /tmp/removed.pdf`
+   — exits 0, prints "Removed"
+2. Open /tmp/removed.pdf — should have 3 pages (original pages 1, 3, 5)
+3. `cargo run -p ezpdf-cli -- remove ezpdf-core/tests/fixtures/3page.pdf "1-3" -o /tmp/out.pdf`
+   — exits 1, stderr contains "cannot remove all"
+4. `cargo run -p ezpdf-cli -- remove ezpdf-core/tests/fixtures/3page.pdf "99" -o /tmp/out.pdf`
+   — exits 1, stderr contains "out of range" or "Error:"
 
 ---
 
@@ -134,6 +175,17 @@
 
 - [x] **5.6 [REVIEW]** Run `cargo test --workspace`. Manual demo: burst a PDF, verify filenames. Check DoD. Commit. Update `progress.md`.
 
+### User Verification
+
+> Confirm a PDF can be split by range or burst into individual pages.
+
+1. `cargo run -p ezpdf-cli -- split ezpdf-core/tests/fixtures/5page.pdf 2-4 -o /tmp/part.pdf`
+   — exits 0; open /tmp/part.pdf — should have 3 pages
+2. `cargo run -p ezpdf-cli -- split ezpdf-core/tests/fixtures/5page.pdf --each -o /tmp/pages/`
+   — exits 0; `ls /tmp/pages/` — should show `page-1.pdf` through `page-5.pdf`
+3. `cargo run -p ezpdf-cli -- split ezpdf-core/tests/fixtures/5page.pdf 10-20 -o /tmp/out.pdf`
+   — exits 1, stderr contains "Error:" (range out of bounds)
+
 ---
 
 ## Phase 6: Rotate Command
@@ -161,6 +213,18 @@
 
 - [x] **6.6 [REVIEW]** Run `cargo test --workspace`. Manual demo in Preview. Check DoD. Commit. Update `progress.md`.
 
+### User Verification
+
+> Confirm pages can be rotated and the result is visually correct.
+
+1. `cargo run -p ezpdf-cli -- rotate ezpdf-core/tests/fixtures/3page.pdf 90 -o /tmp/rotated.pdf`
+   — exits 0; open /tmp/rotated.pdf in Preview — all 3 pages should be rotated 90°
+2. `cargo run -p ezpdf-cli -- rotate ezpdf-core/tests/fixtures/3page.pdf 90 --pages 2 -o /tmp/rotated2.pdf`
+   — exits 0; open /tmp/rotated2.pdf — only page 2 should be rotated, pages 1 and 3 unchanged
+3. `cargo run -p ezpdf-cli -- rotate ezpdf-core/tests/fixtures/3page.pdf 45 -o /tmp/out.pdf`
+   — exits 1, stderr contains "multiple of 90" or "Error:"
+4. Round-trip: rotate 90 then rotate 270 — result should look identical to original
+
 ---
 
 ## Phase 7: Reorder Command
@@ -187,6 +251,19 @@
 - [x] **7.5 [REFACTOR]** Ensure `reorder` validation error messages explicitly name the missing/duplicate page.
 
 - [x] **7.6 [REVIEW]** Run `cargo test --workspace`. Manual round-trip demo. Check DoD. Commit. Update `progress.md`.
+
+### User Verification
+
+> Confirm pages can be rearranged in a custom order.
+
+1. `cargo run -p ezpdf-cli -- reorder ezpdf-core/tests/fixtures/3page.pdf "3,1,2" -o /tmp/reordered.pdf`
+   — exits 0; open /tmp/reordered.pdf — page 3 of original should now be first
+2. `cargo run -p ezpdf-cli -- reorder /tmp/reordered.pdf "2,3,1" -o /tmp/restored.pdf`
+   — round-trip back to original order
+3. `cargo run -p ezpdf-cli -- reorder ezpdf-core/tests/fixtures/3page.pdf "1,1,2" -o /tmp/out.pdf`
+   — exits 1, stderr contains "duplicate" or "Error:"
+4. `cargo run -p ezpdf-cli -- reorder ezpdf-core/tests/fixtures/3page.pdf "1,2,99" -o /tmp/out.pdf`
+   — exits 1, stderr contains "out of range" or "Error:"
 
 > **🏁 After 7.6: all 5 core operations complete. ezpdf works end-to-end.**
 
@@ -222,6 +299,19 @@
 
 - [x] **8.7 [REVIEW]** Run `cargo test --workspace`. Run all help commands manually. Pipe completions to a temp file and verify format. Check DoD. Commit. Update `progress.md`.
 
+### User Verification
+
+> Confirm the CLI is polished with complete help, completions, and good error messages.
+
+1. `cargo run -p ezpdf-cli -- --help` — shows all subcommands with descriptions and examples
+2. `cargo run -p ezpdf-cli -- merge --help` — shows `--output`, `--quiet`, `--password`, `--batch` flags with descriptions
+3. `cargo run -p ezpdf-cli -- --version` — prints "ezpdf 0.1.0" (or current version)
+4. `cargo run -p ezpdf-cli -- completions zsh` — outputs non-empty zsh completion script
+5. `cargo run -p ezpdf-cli -- completions bash` — exits 0, non-empty output
+6. `cargo run -p ezpdf-cli -- merge ezpdf-core/tests/fixtures/encrypted.pdf -o /tmp/out.pdf`
+   — exits 1, stderr contains "password-protected" and hint about `--password`
+7. `cargo run -p ezpdf-cli -- unknowncmd` — exits 1, stderr contains "error:"
+
 ---
 
 ## Phase 9: Performance & Benchmarks
@@ -243,6 +333,15 @@
 - [x] **9.2 [SETUP]** Add `rayon` to `ezpdf-core` dependencies. Implement parallel file loading in `merge.rs`: load and parse all input `Document`s in parallel using `rayon::iter`, then combine sequentially. Run `cargo bench -- --baseline baseline` to verify merge is not slower (should be faster for ≥3 files).
 
 - [x] **9.3 [REVIEW]** Copy benchmark output to `docs/benchmarks/baseline.md`. Run `cargo test --workspace` — no regressions. Commit. Update `progress.md`.
+
+### User Verification
+
+> Confirm benchmarks run and parallel merge is performant.
+
+1. `cargo bench -- merge` — runs merge benchmark, prints timing (should be single-digit milliseconds for 5×10-page PDFs)
+2. `cargo bench -- split_each` — runs split benchmark
+3. `cat docs/benchmarks/baseline.md` — shows committed baseline timings
+4. `cargo test --workspace` — no regressions from adding parallelism
 
 ---
 
@@ -270,6 +369,17 @@
 - [x] **10.5 [SETUP]** Update `README.md` with: installation (Homebrew + cargo install), full usage examples for all 5 commands, link to man page, link to GitHub releases.
 
 - [x] **10.6 [REVIEW]** End-to-end install test: `brew install ez/tap/ezpdf`, run all 5 commands with real PDFs, verify correct output. Run `cargo install ezpdf` in a clean environment. Update `progress.md`. **v1.0.0 is RELEASED.**
+
+### User Verification
+
+> Confirm the released binary installs and works correctly.
+
+1. `brew install ez/tap/ezpdf` — installs without errors
+2. `which ezpdf` — shows `/opt/homebrew/bin/ezpdf` (or equivalent)
+3. `ezpdf --version` — prints version number
+4. `ezpdf merge --help` — shows help without needing `cargo run`
+5. `ezpdf merge /path/to/a.pdf /path/to/b.pdf -o /tmp/merged.pdf` — works from any directory
+6. Check GitHub Releases page — four binary artifacts attached (macOS arm64, macOS x86_64, Linux x86_64, Linux arm64)
 
 ---
 
@@ -333,6 +443,20 @@ _None yet. Blockers found during stories will be injected here._
 - [x] **11.6 [REVIEW]** Run `cargo test --workspace`. Manual demo: `ezpdf info` on a real PDF.
   Check Phase 11 DoD. Commit `feat: ezpdf info command (Phase 11)`. Update `progress.md`.
 
+### User Verification
+
+> Confirm PDF info is displayed correctly in both human-readable and JSON formats.
+
+1. `ezpdf info ezpdf-core/tests/fixtures/3page.pdf`
+   — exits 0; output shows `Pages: 3` and per-page dimensions
+2. `ezpdf info ezpdf-core/tests/fixtures/3page.pdf --json`
+   — exits 0; output is valid JSON containing `"page_count": 3`; validate with `| python3 -m json.tool`
+3. `ezpdf info ezpdf-core/tests/fixtures/3page.pdf --pages 1-2`
+   — exits 0; shows dimensions for pages 1 and 2 only
+4. `ezpdf info nonexistent.pdf` — exits 1, stderr contains "Error:"
+5. `ezpdf info ezpdf-core/tests/fixtures/encrypted.pdf` — exits 1, stderr mentions "password-protected"
+6. Try a real PDF with known metadata (e.g., a downloaded PDF) — verify Title, Author fields appear when present
+
 ---
 
 ## Phase 12: Batch Operations
@@ -381,6 +505,24 @@ _None yet. Blockers found during stories will be injected here._
 - [x] **12.6 [REVIEW]** Run `cargo test --workspace`. Manual demo: batch rotate a directory of PDFs.
   Check Phase 12 DoD. Commit `feat: batch --batch flag (Phase 12)`. Update `progress.md`.
 
+### User Verification
+
+> Confirm the --batch flag processes all PDFs in a directory.
+
+1. Set up a test directory:
+   ```
+   mkdir /tmp/batch_in
+   cp ezpdf-core/tests/fixtures/3page.pdf /tmp/batch_in/doc1.pdf
+   cp ezpdf-core/tests/fixtures/5page.pdf /tmp/batch_in/doc2.pdf
+   ```
+2. `ezpdf rotate --batch /tmp/batch_in/ 90 -o /tmp/batch_out/`
+   — exits 0; `ls /tmp/batch_out/` shows `doc1.pdf` and `doc2.pdf`; open each to confirm rotation
+3. `ezpdf remove --batch /tmp/batch_in/ "1" -o /tmp/batch_rm/`
+   — exits 0; each output file has one fewer page than its input
+4. `ezpdf merge --batch /tmp/batch_in/ -o /tmp/batch_merged.pdf`
+   — exits 0; output is a single PDF with 3+5=8 pages
+5. `ezpdf rotate --batch /tmp/nonexistent/ 90 -o /tmp/out/` — exits 1, stderr contains "Error:"
+
 ---
 
 ## Phase 13: PDF Metadata Read/Write
@@ -426,6 +568,22 @@ _None yet. Blockers found during stories will be injected here._
 
 - [x] **13.6 [REVIEW]** Run `cargo test --workspace`. Round-trip demo. Check Phase 13 DoD.
   Commit `feat: ezpdf meta command (Phase 13)`. Update `progress.md`.
+
+### User Verification
+
+> Confirm metadata can be read and written correctly with a round-trip test.
+
+1. `ezpdf meta get ezpdf-core/tests/fixtures/3page.pdf`
+   — exits 0; prints available metadata fields (may be mostly empty for test fixture)
+2. `ezpdf meta set ezpdf-core/tests/fixtures/3page.pdf --title "My Test Doc" --author "EZ" -o /tmp/meta.pdf`
+   — exits 0, prints success message
+3. `ezpdf meta get /tmp/meta.pdf`
+   — exits 0; output shows `title: My Test Doc` and `author: EZ`
+4. `ezpdf meta get /tmp/meta.pdf --json`
+   — exits 0; valid JSON with `"title": "My Test Doc"`; validate with `| python3 -m json.tool`
+5. `ezpdf meta set /tmp/meta.pdf --clear-all -o /tmp/meta_cleared.pdf && ezpdf meta get /tmp/meta_cleared.pdf`
+   — all fields empty after clear
+6. Open /tmp/meta.pdf in Preview → File → Get Info — verify Title field shows "My Test Doc"
 
 ---
 
@@ -475,6 +633,22 @@ _None yet. Blockers found during stories will be injected here._
 - [x] **15.7 [REVIEW]** Run `cargo test --workspace`. Demo: operate on a real encrypted PDF.
   Check Phase 15 DoD. Commit `feat: encrypted PDF --password support (Phase 15)`. Update `progress.md`.
 
+### User Verification
+
+> Confirm encrypted PDFs can be decrypted and operated on with the correct password.
+
+1. `ezpdf info ezpdf-core/tests/fixtures/encrypted.pdf`
+   — exits 1, stderr contains "password-protected" (existing encrypted detection still works)
+2. `ezpdf merge --password secret ezpdf-core/tests/fixtures/encrypted_pw.pdf ezpdf-core/tests/fixtures/3page.pdf -o /tmp/decrypted_merged.pdf`
+   — exits 0; open /tmp/decrypted_merged.pdf — should be an unencrypted merged PDF
+3. `ezpdf rotate --password wrongpassword ezpdf-core/tests/fixtures/encrypted_pw.pdf 90 -o /tmp/out.pdf`
+   — exits 1, stderr contains "password" or "wrong" with a recovery hint
+4. `ezpdf info --password secret ezpdf-core/tests/fixtures/encrypted_pw.pdf`
+   — exits 0; shows page count and dimensions of the decrypted PDF
+5. Create a password file: `echo "secret" > /tmp/pw.txt`
+   `ezpdf rotate --password-file /tmp/pw.txt ezpdf-core/tests/fixtures/encrypted_pw.pdf 90 -o /tmp/rotated_enc.pdf`
+   — exits 0
+
 ---
 
 ## Phase 16: Watermark Pages
@@ -518,6 +692,20 @@ _None yet. Blockers found during stories will be injected here._
 - [x] **16.6 [REVIEW]** Visual verification: open watermarked PDF in Preview, confirm text is visible.
   Run `cargo test --workspace`. Check Phase 16 DoD.
   Commit `feat: watermark command (Phase 16)`. Update `progress.md`.
+
+### User Verification
+
+> Confirm watermarks are visually applied to PDF pages.
+
+1. `ezpdf watermark ezpdf-core/tests/fixtures/3page.pdf "CONFIDENTIAL" -o /tmp/watermarked.pdf`
+   — exits 0; open /tmp/watermarked.pdf in Preview — diagonal "CONFIDENTIAL" text visible on all 3 pages
+2. `ezpdf watermark ezpdf-core/tests/fixtures/3page.pdf "DRAFT" --opacity 0.2 -o /tmp/wm_light.pdf`
+   — watermark is lighter/more transparent than default
+3. `ezpdf watermark ezpdf-core/tests/fixtures/3page.pdf "DRAFT" --pages 1 -o /tmp/wm_page1.pdf`
+   — watermark appears only on page 1; pages 2 and 3 unchanged
+4. `ezpdf watermark ezpdf-core/tests/fixtures/3page.pdf "DRAFT" --font-size 80 --color "1,0,0" -o /tmp/wm_red.pdf`
+   — large red watermark
+5. `ezpdf watermark nonexistent.pdf "DRAFT" -o /tmp/out.pdf` — exits 1, stderr contains "Error:"
 
 ---
 
@@ -565,6 +753,21 @@ _None yet. Blockers found during stories will be injected here._
   Run `cargo test --workspace`. Check Phase 17 DoD.
   Commit `feat: bookmarks command (Phase 17)`. Update `progress.md`.
 
+### User Verification
+
+> Confirm bookmarks can be listed and added, and appear in PDF viewers.
+
+1. `ezpdf bookmarks list ezpdf-core/tests/fixtures/3page.pdf`
+   — exits 0; outputs empty list (no bookmarks in test fixture)
+2. `ezpdf bookmarks add ezpdf-core/tests/fixtures/3page.pdf --title "Chapter 1" --page 1 -o /tmp/bookmarked.pdf`
+   — exits 0, prints success message
+3. `ezpdf bookmarks list /tmp/bookmarked.pdf`
+   — exits 0; output contains "Chapter 1"
+4. `ezpdf bookmarks add /tmp/bookmarked.pdf --title "Chapter 2" --page 2 -o /tmp/bookmarked2.pdf && ezpdf bookmarks list /tmp/bookmarked2.pdf`
+   — shows both "Chapter 1" and "Chapter 2"
+5. `ezpdf bookmarks list /tmp/bookmarked2.pdf --json` — valid JSON array; validate with `| python3 -m json.tool`
+6. Open /tmp/bookmarked2.pdf in Preview → View → Table of Contents (or sidebar bookmark icon) — both chapters visible
+
 ---
 
 ## Phase 18: Image Extraction
@@ -609,6 +812,19 @@ _None yet. Blockers found during stories will be injected here._
 - [x] **18.6 [REVIEW]** Run `cargo test --workspace`. Manual demo on a PDF with images.
   Check Phase 18 DoD. Commit `feat: image extraction command (Phase 18)`. Update `progress.md`.
 
+### User Verification
+
+> Confirm embedded images are extracted to the correct format.
+
+1. `ezpdf images ezpdf-core/tests/fixtures/with_image.pdf -o /tmp/images/`
+   — exits 0; stdout contains "Extracted 1 image" (or more)
+2. `ls /tmp/images/` — shows `page-1-image-1.jpg` (or similar naming)
+3. Open /tmp/images/page-1-image-1.jpg — should be a valid, viewable image
+4. `ezpdf images ezpdf-core/tests/fixtures/3page.pdf -o /tmp/images2/`
+   — exits 0; stdout contains "0 images" (no images in plain test fixture)
+5. Try a real PDF with embedded images (e.g., a downloaded report): verify all images extracted correctly
+6. `ezpdf images nonexistent.pdf -o /tmp/out/` — exits 1, stderr contains "Error:"
+
 ---
 
 ## Phase 19: PDF Optimization
@@ -650,6 +866,20 @@ _None yet. Blockers found during stories will be injected here._
 
 - [x] **19.5 [REVIEW]** Run `cargo test --workspace`. Demo on a PDF, show bytes saved.
   Check Phase 19 DoD. Commit `feat: optimize command (Phase 19)`. Update `progress.md`.
+
+### User Verification
+
+> Confirm optimization removes unused objects and reduces file size.
+
+1. `ls -la ezpdf-core/tests/fixtures/bloated.pdf` — note the file size
+2. `ezpdf optimize ezpdf-core/tests/fixtures/bloated.pdf -o /tmp/optimized.pdf`
+   — exits 0; stdout contains "Removed N objects" and "saved X bytes" where N > 0
+3. `ls -la /tmp/optimized.pdf` — file size should be ≤ bloated.pdf
+4. Open /tmp/optimized.pdf — valid PDF, same visual content as input
+5. `ezpdf optimize ezpdf-core/tests/fixtures/3page.pdf -o /tmp/opt_normal.pdf`
+   — exits 0; output is a valid PDF (0 objects removed is acceptable for a clean fixture)
+6. `ezpdf optimize ezpdf-core/tests/fixtures/bloated.pdf --linearize -o /tmp/linearized.pdf`
+   — exits 0; either linearizes (if qpdf installed) or prints "linearization skipped" warning
 
 ---
 
@@ -778,6 +1008,22 @@ _None yet. Blockers found during stories will be injected here._
       Append Phase 20 section to `progress.md`.
       Commit: `chore: Phase 20 complete — desktop app (Tauri v2 + Svelte 5)`.
       Output completion signal: `<promise>EZPDF BACKLOG COMPLETE</promise>`.
+
+### User Verification
+
+> Confirm the desktop app launches and all 5 operations work end-to-end.
+
+1. `cd ezpdf-app && cargo tauri dev` — app window opens on macOS/Linux
+2. Drag two PDF files onto the drop zone — both filenames appear in the file list
+3. Select **Merge** in the sidebar, click **Run Merge** — success message appears, output file created in same folder as first input
+4. Select **Split**, toggle to "Extract range", enter "1-2", drag one PDF, click Run — 2-page PDF created
+5. Select **Split**, toggle to "Burst all pages", drag a PDF, click Run — opens folder picker; after selecting a folder, individual page files created
+6. Select **Remove**, enter pages "1", drag a 3-page PDF, click Run — 2-page output created
+7. Select **Rotate**, choose 90°, drag a PDF, click Run — pages in output are rotated 90°
+8. Select **Reorder**, enter order "3,1,2" for a 3-page PDF, click Run — pages reordered
+9. Click **Run** with no files loaded — Run button is disabled or shows "Add at least one PDF file"
+10. Drag an encrypted PDF (no password) — after clicking Run, status bar shows error about encryption
+11. Click **Save As…** — native file save dialog opens
 
 ---
 
