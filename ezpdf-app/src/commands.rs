@@ -62,6 +62,7 @@ pub fn cmd_get_metadata(input: String) -> Result<PdfMetadata, String> {
     ezpdf_core::get_metadata(Path::new(&input)).map_err(|e| e.to_string())
 }
 
+#[allow(clippy::too_many_arguments)]
 #[tauri::command]
 pub fn cmd_set_metadata(
     input: String,
