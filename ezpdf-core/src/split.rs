@@ -6,6 +6,15 @@ use crate::page_range;
 use crate::remove::build_kept;
 
 pub fn split_range(input: &Path, range: &str, output: &Path) -> Result<(), EzPdfError> {
+    if output.is_dir() {
+        return Err(EzPdfError::Io(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            format!(
+                "'{}' already exists as a directory — delete it or run Burst mode to recreate",
+                output.display()
+            ),
+        )));
+    }
     let doc = load_doc(input)?;
     let page_count = doc.get_pages().len() as u32;
     let pages = page_range::parse(range, page_count)?;

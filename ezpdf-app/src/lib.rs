@@ -11,6 +11,7 @@ pub fn run() {
             commands::cmd_remove,
             commands::cmd_rotate,
             commands::cmd_reorder,
+            commands::cmd_page_count,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -49,3 +49,8 @@ pub fn cmd_reorder(input: String, order: String, output: String) -> Result<Strin
         .map_err(|e| e.to_string())?;
     Ok(format!("Reordered → {}", output))
 }
+
+#[tauri::command]
+pub fn cmd_page_count(input: String) -> Result<u32, String> {
+    ezpdf_core::page_count(Path::new(&input)).map_err(|e| e.to_string())
+}

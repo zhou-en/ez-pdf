@@ -6,7 +6,7 @@ description = "Desktop app for ezpdf (Tauri v2 + Svelte 5)"
 license = "MIT"
 
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["devtools"] }
 tauri-plugin-fs = "2"
 tauri-plugin-dialog = "2"
 ezpdf-core = { path = "../ezpdf-core" }

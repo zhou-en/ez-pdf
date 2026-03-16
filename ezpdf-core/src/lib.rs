@@ -18,7 +18,7 @@ pub use watermark as watermark_mod;
 
 pub use bookmarks::{add_bookmark, list_bookmarks, Bookmark};
 pub use images::extract_images;
-pub use info::{info, PdfInfo};
+pub use info::{info, page_count, PdfInfo};
 pub use merge::{load_doc_with_password, merge};
 pub use metadata::{get_metadata, set_metadata};
 pub use optimize::{optimize, OptimizeStats};

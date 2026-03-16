@@ -18,6 +18,11 @@ pub struct PdfInfo {
     pub producer: Option<String>,
 }
 
+pub fn page_count(input: &Path) -> Result<u32, EzPdfError> {
+    let doc = load_doc(input)?;
+    Ok(doc.get_pages().len() as u32)
+}
+
 pub fn info(input: &Path) -> Result<PdfInfo, EzPdfError> {
     let doc = load_doc(input)?;
 

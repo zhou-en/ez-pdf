@@ -1,12 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, fireEvent } from '@testing-library/svelte';
 import DropZone from './DropZone.svelte';
 
 vi.mock('../lib/dnd', () => ({
   onFileDrop: vi.fn(),
 }));
 
+vi.mock('../lib/dialog', () => ({
+  openPdfFiles: vi.fn(),
+}));
+
 import { onFileDrop } from '../lib/dnd';
+import { openPdfFiles } from '../lib/dialog';
 
 const mockOnFileDrop = vi.mocked(onFileDrop);
 
@@ -55,18 +60,33 @@ describe('DropZone', () => {
     expect(received[0]).toEqual(['/home/user/doc.pdf']);
   });
 
-  it('shows dropped file basenames in the component', async () => {
-    let capturedHandler: ((paths: string[]) => void) | undefined;
-    mockOnFileDrop.mockImplementation(async (handler) => {
-      capturedHandler = handler;
-      return vi.fn();
-    });
-
+  it('does not render a file list — display is owned by the parent', () => {
     render(DropZone);
+    expect(document.querySelector('ul')).toBeNull();
+  });
 
-    await vi.waitFor(() => expect(capturedHandler).toBeDefined());
-    capturedHandler!(['/home/user/report.pdf']);
+  it('clicking the drop zone opens the file dialog and emits selected pdfs', async () => {
+    const mockOpen = vi.mocked(openPdfFiles);
+    mockOpen.mockResolvedValue(['/home/user/a.pdf', '/home/user/b.pdf']);
 
-    expect(await screen.findByText('report.pdf')).toBeInTheDocument();
+    const received: string[][] = [];
+    render(DropZone, { onfilesAdded: (paths: string[]) => received.push(paths) });
+
+    await fireEvent.click(screen.getByRole('button', { name: /browse/i }));
+
+    await vi.waitFor(() => expect(received).toHaveLength(1));
+    expect(received[0]).toEqual(['/home/user/a.pdf', '/home/user/b.pdf']);
+  });
+
+  it('clicking browse does nothing when dialog is cancelled', async () => {
+    const mockOpen = vi.mocked(openPdfFiles);
+    mockOpen.mockResolvedValue(null);
+
+    const received: string[][] = [];
+    render(DropZone, { onfilesAdded: (paths: string[]) => received.push(paths) });
+
+    await fireEvent.click(screen.getByRole('button', { name: /browse/i }));
+    await vi.waitFor(() => expect(mockOpen).toHaveBeenCalled());
+    expect(received).toHaveLength(0);
   });
 });

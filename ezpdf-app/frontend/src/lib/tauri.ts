@@ -28,3 +28,7 @@ export async function cmdRotate(
 export async function cmdReorder(input: string, order: string, output: string): Promise<string> {
   return invoke<string>('cmd_reorder', { input, order, output });
 }
+
+export async function cmdPageCount(input: string): Promise<number> {
+  return invoke<number>('cmd_page_count', { input });
+}
