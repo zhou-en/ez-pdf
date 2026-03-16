@@ -122,7 +122,10 @@ pub fn cmd_add_bookmark(
 ) -> Result<String, String> {
     ezpdf_core::add_bookmark(Path::new(&input), &title, page, Path::new(&output))
         .map_err(|e| e.to_string())?;
-    Ok(format!("Bookmark '{}' at page {} → {}", title, page, output))
+    Ok(format!(
+        "Bookmark '{}' at page {} → {}",
+        title, page, output
+    ))
 }
 
 #[tauri::command]
