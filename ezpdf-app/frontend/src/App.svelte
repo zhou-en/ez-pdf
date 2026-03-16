@@ -2,17 +2,28 @@
   import Sidebar from './components/Sidebar.svelte';
   import DropZone from './components/DropZone.svelte';
   import FileList from './components/FileList.svelte';
+  import PageGrid from './components/PageGrid.svelte';
   import OptionsPanel from './components/OptionsPanel.svelte';
   import ProgressBar from './components/ProgressBar.svelte';
   import {
-    cmdMerge, cmdSplitRange, cmdSplitEach, cmdRemove, cmdRotate, cmdReorder, cmdPageCount,
+    cmdMerge, cmdSplitRange, cmdRemove, cmdRotate, cmdReorder, cmdPageCount,
     cmdGetMetadata, cmdSetMetadata, cmdWatermark, cmdListBookmarks, cmdAddBookmark, cmdExtractImages,
+    cmdInfo,
   } from './lib/tauri';
   import type { PdfMetadata, Bookmark } from './lib/tauri';
   import { saveOutputPath, pickOutputDir } from './lib/dialog';
 
   type Op = 'merge' | 'split' | 'remove' | 'rotate' | 'reorder' | 'metadata' | 'watermark' | 'bookmarks' | 'extract';
   type Status = { type: 'idle' | 'success' | 'error'; message: string };
+
+  interface PageTile {
+    pageNum: number;
+    width: number;
+    height: number;
+    selected: boolean;
+  }
+
+  const gridOps: Op[] = ['reorder', 'remove', 'rotate', 'split'];
 
   const ops: Op[] = ['merge', 'split', 'remove', 'rotate', 'reorder', 'metadata', 'watermark', 'bookmarks', 'extract'];
 
@@ -32,13 +43,12 @@
     metadata: '', watermark: '', bookmarks: '', extract: '',
   });
 
+  // Grid page tile state (shared across reorder/remove/rotate/split)
+  let pageTiles: PageTile[] = $state([]);
+  let splitOutputMode: 'combined' | 'individual' = $state('combined');
+
   // Options state
-  let splitMode = $state('range');
-  let splitRange = $state('');
-  let removePages = $state('');
   let rotateDegrees = $state(90);
-  let rotatePages = $state('');
-  let reorderOrder = $state('');
 
   // Metadata op state
   let metaTitle = $state('');
@@ -60,7 +70,7 @@
 
   let files = $derived(filesByOp[selectedOp]);
 
-  // Page counts keyed by absolute path
+  // Page counts keyed by absolute path (used in merge FileList)
   let pageCounts: Record<string, number> = $state({});
 
   function addFiles(paths: string[]) {
@@ -70,9 +80,18 @@
         pageCounts = { ...pageCounts, [p]: n };
       }).catch(() => {/* ignore if count fails */});
     }
-    // Auto-load metadata / bookmarks when first file is added for those ops
     if (paths.length > 0) {
-      if (selectedOp === 'metadata') {
+      if (gridOps.includes(selectedOp)) {
+        // Load page tiles for grid operations
+        cmdInfo(paths[0]).then((info) => {
+          pageTiles = info.dimensions.map(([w, h], i) => ({
+            pageNum: i + 1,
+            width: w,
+            height: h,
+            selected: false,
+          }));
+        }).catch(() => {});
+      } else if (selectedOp === 'metadata') {
         cmdGetMetadata(paths[0]).then((m) => {
           loadedMeta = m;
           metaTitle = m.title ?? '';
@@ -131,9 +150,6 @@
     if (files.length === 0) return '';
     const dir = dirname(files[0]);
     const base = stem(files[0]);
-    if (op === 'split' && splitMode === 'burst') {
-      return `${dir}${base}-pages`;
-    }
     if (op === 'extract') {
       return `${dir}${base}-images`;
     }
@@ -145,7 +161,9 @@
   }
 
   async function handleSaveAs() {
-    const needsDir = (selectedOp === 'split' && splitMode === 'burst') || selectedOp === 'extract';
+    const needsDir =
+      (selectedOp === 'split' && splitOutputMode === 'individual') ||
+      selectedOp === 'extract';
     const def = defaultOutput(selectedOp);
     const picked = needsDir
       ? await pickOutputDir(def)
@@ -160,18 +178,15 @@
       status = { type: 'error', message: 'Add at least one PDF file.' };
       return;
     }
-    if (selectedOp === 'split' && splitMode === 'range' && splitRange.trim() === '') {
-      status = { type: 'error', message: 'Enter a page range (e.g. 1-3) or switch to Burst all pages.' };
-      return;
+
+    // Grid-op validations
+    if (['remove', 'rotate', 'split'].includes(selectedOp)) {
+      if (pageTiles.filter((t) => t.selected).length === 0) {
+        status = { type: 'error', message: 'Select at least one page.' };
+        return;
+      }
     }
-    if (selectedOp === 'remove' && removePages.trim() === '') {
-      status = { type: 'error', message: 'Enter page numbers to remove (e.g. 2,4-6).' };
-      return;
-    }
-    if (selectedOp === 'reorder' && reorderOrder.trim() === '') {
-      status = { type: 'error', message: 'Enter the new page order (e.g. 3,1,2).' };
-      return;
-    }
+
     if (selectedOp === 'watermark' && watermarkText.trim() === '') {
       status = { type: 'error', message: 'Enter watermark text.' };
       return;
@@ -180,25 +195,36 @@
       status = { type: 'error', message: 'Enter a bookmark title.' };
       return;
     }
+
     running = true;
     status = { type: 'idle', message: '' };
     try {
       let msg: string;
       const out = resolvedOutput(selectedOp);
+
       if (selectedOp === 'merge') {
         msg = await cmdMerge(files, out);
-      } else if (selectedOp === 'split') {
-        if (splitMode === 'burst') {
-          msg = await cmdSplitEach(files[0], out);
-        } else {
-          msg = await cmdSplitRange(files[0], splitRange, out);
-        }
-      } else if (selectedOp === 'remove') {
-        msg = await cmdRemove(files[0], removePages, out);
-      } else if (selectedOp === 'rotate') {
-        msg = await cmdRotate(files[0], rotateDegrees, rotatePages || null, out);
       } else if (selectedOp === 'reorder') {
-        msg = await cmdReorder(files[0], reorderOrder, out);
+        const order = pageTiles.map((t) => t.pageNum).join(',');
+        msg = await cmdReorder(files[0], order, out);
+      } else if (selectedOp === 'remove') {
+        const pages = pageTiles.filter((t) => t.selected).map((t) => t.pageNum).join(',');
+        msg = await cmdRemove(files[0], pages, out);
+      } else if (selectedOp === 'rotate') {
+        const pages = pageTiles.filter((t) => t.selected).map((t) => t.pageNum).join(',');
+        msg = await cmdRotate(files[0], rotateDegrees, pages || null, out);
+      } else if (selectedOp === 'split') {
+        const selected = pageTiles.filter((t) => t.selected).map((t) => t.pageNum);
+        if (splitOutputMode === 'individual') {
+          const results: string[] = [];
+          for (const p of selected) {
+            const pageOut = out.replace(/\.pdf$/i, '') + `-page-${p}.pdf`;
+            results.push(await cmdSplitRange(files[0], String(p), pageOut));
+          }
+          msg = results.join('\n');
+        } else {
+          msg = await cmdSplitRange(files[0], selected.join(','), out);
+        }
       } else if (selectedOp === 'metadata') {
         msg = await cmdSetMetadata(
           files[0], out,
@@ -237,12 +263,20 @@
     <DropZone onfilesAdded={addFiles} />
 
     {#if files.length > 0}
-      <FileList
-        {files}
-        {pageCounts}
-        onremove={removeFile}
-        onreorder={reorderFiles}
-      />
+      {#if selectedOp === 'merge'}
+        <FileList
+          {files}
+          {pageCounts}
+          onremove={removeFile}
+          onreorder={reorderFiles}
+        />
+      {:else if gridOps.includes(selectedOp)}
+        <PageGrid
+          tiles={pageTiles}
+          mode={selectedOp === 'reorder' ? 'reorder' : 'select'}
+          ontiles={(t) => (pageTiles = t)}
+        />
+      {/if}
 
       <div class="output-row">
         <span class="output-path">{resolvedOutput(selectedOp)}</span>
@@ -254,12 +288,8 @@
 
     <OptionsPanel
       op={selectedOp}
-      bind:splitMode
-      bind:splitRange
-      bind:removePages
+      bind:splitOutputMode
       bind:rotateDegrees
-      bind:rotatePages
-      bind:reorderOrder
       bind:metaTitle
       bind:metaAuthor
       bind:metaSubject

@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "identifier": "com.ezpdf.app",
   "build": {
-    "beforeDevCommand": "pnpm dev",
-    "beforeBuildCommand": "pnpm build",
+    "beforeDevCommand": "cd /Users/enzhou/Projects/ez-pdf/ezpdf-app/frontend && pnpm dev",
+    "beforeBuildCommand": "cd /Users/enzhou/Projects/ez-pdf/ezpdf-app/frontend && pnpm build",
     "devUrl": "http://localhost:1420",
     "frontendDist": "frontend/dist"
   },

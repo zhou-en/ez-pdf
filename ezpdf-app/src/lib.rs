@@ -18,6 +18,7 @@ pub fn run() {
             commands::cmd_list_bookmarks,
             commands::cmd_add_bookmark,
             commands::cmd_extract_images,
+            commands::cmd_info,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -197,5 +198,20 @@ mod tests {
             tmp.path().to_string_lossy().into_owned(),
         );
         assert!(result.is_ok(), "expected Ok, got: {:?}", result);
+    }
+
+    // ── Phase 24 tests ────────────────────────────────────────────────────────
+
+    #[test]
+    fn cmd_info_returns_page_count_and_dimensions() {
+        let result = cmd_info(fixture("3page.pdf"));
+        assert!(result.is_ok(), "expected Ok, got: {:?}", result);
+        let info = result.unwrap();
+        assert_eq!(info.page_count, 3);
+        assert_eq!(info.dimensions.len(), 3);
+        for (w, h) in &info.dimensions {
+            assert!(*w > 0.0, "width must be positive");
+            assert!(*h > 0.0, "height must be positive");
+        }
     }
 }

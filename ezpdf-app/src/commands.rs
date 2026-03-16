@@ -131,3 +131,8 @@ pub fn cmd_extract_images(input: String, output_dir: String) -> Result<String, S
         .map_err(|e| e.to_string())?;
     Ok(format!("Extracted {} image(s) → {}", count, output_dir))
 }
+
+#[tauri::command]
+pub fn cmd_info(input: String) -> Result<ezpdf_core::PdfInfo, String> {
+    ezpdf_core::info(Path::new(&input)).map_err(|e| e.to_string())
+}

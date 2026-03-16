@@ -12,36 +12,43 @@
   } = $props();
 
   let draggingIndex: number | null = $state(null);
+  let isDragging = $state(false);
 
   function basename(path: string): string {
     return path.replace(/^.*[/\\]/, '');
   }
 
-  function handleDragStart(index: number) {
+  function handlePointerDown(index: number) {
     draggingIndex = index;
+    isDragging = false;
   }
 
-  function handleDragOver(event: DragEvent) {
-    event.preventDefault();
+  function handlePointerMove() {
+    if (draggingIndex !== null) isDragging = true;
   }
 
-  function handleDrop(index: number) {
-    if (draggingIndex !== null && draggingIndex !== index) {
+  function handlePointerUp(index: number) {
+    if (isDragging && draggingIndex !== null && draggingIndex !== index) {
       onreorder(draggingIndex, index);
     }
     draggingIndex = null;
+    isDragging = false;
+  }
+
+  function handlePointerCancel() {
+    draggingIndex = null;
+    isDragging = false;
   }
 </script>
 
-<ul class="file-list">
+<ul class="file-list" onpointermove={handlePointerMove}>
   {#each files as file, i}
     <li
       role="listitem"
-      draggable="true"
-      ondragstart={() => handleDragStart(i)}
-      ondragover={handleDragOver}
-      ondrop={() => handleDrop(i)}
-      class:dragging={draggingIndex === i}
+      class:dragging={draggingIndex === i && isDragging}
+      onpointerdown={() => handlePointerDown(i)}
+      onpointerup={() => handlePointerUp(i)}
+      onpointercancel={handlePointerCancel}
     >
       <span class="name">{basename(file)}</span>
       {#if pageCounts[file] !== undefined}
@@ -52,6 +59,7 @@
       <button
         class="remove-btn"
         aria-label="Remove {basename(file)}"
+        onpointerdown={(e) => e.stopPropagation()}
         onclick={() => onremove(i)}
       >×</button>
     </li>

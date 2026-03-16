@@ -9,55 +9,53 @@ describe('OptionsPanel rendering', () => {
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
 
-  it('split panel shows mode radios and range input by default', () => {
-    render(OptionsPanel, { op: 'split' });
-    expect(screen.getByLabelText(/extract range/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/burst all pages/i)).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: /range/i })).toBeInTheDocument();
+  it('reorder panel renders nothing (no text input)', () => {
+    render(OptionsPanel, { op: 'reorder' });
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
 
-  it('split panel hides range input when burst mode is selected', () => {
-    render(OptionsPanel, { op: 'split', splitMode: 'burst' });
+  it('remove panel renders nothing (no text input)', () => {
+    render(OptionsPanel, { op: 'remove' });
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+  });
+
+  it('rotate panel shows degrees select only (no pages text input)', () => {
+    render(OptionsPanel, { op: 'rotate' });
+    expect(screen.getByRole('combobox', { name: /degrees/i })).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: /pages/i })).not.toBeInTheDocument();
+  });
+
+  it('split panel shows combined/individual toggle (no range/burst radio)', () => {
+    render(OptionsPanel, { op: 'split' });
+    // Should show combined/individual toggle
+    expect(screen.getByLabelText(/combined/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/individual/i)).toBeInTheDocument();
+    // Should NOT show old range/burst radios or text input
+    expect(screen.queryByLabelText(/extract range/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/burst all pages/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('textbox', { name: /range/i })).not.toBeInTheDocument();
   });
 
-  it('remove panel shows pages text input', () => {
-    render(OptionsPanel, { op: 'remove' });
-    expect(screen.getByRole('textbox', { name: /pages/i })).toBeInTheDocument();
+  it('split combined is selected by default', () => {
+    render(OptionsPanel, { op: 'split', splitOutputMode: 'combined' });
+    const combinedRadio = screen.getByLabelText(/combined/i) as HTMLInputElement;
+    expect(combinedRadio.checked).toBe(true);
   });
 
-  it('rotate panel shows degrees select and pages input', () => {
-    render(OptionsPanel, { op: 'rotate' });
-    expect(screen.getByRole('combobox', { name: /degrees/i })).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: /pages/i })).toBeInTheDocument();
-  });
-
-  it('reorder panel shows order text input', () => {
-    render(OptionsPanel, { op: 'reorder' });
-    expect(screen.getByRole('textbox', { name: /order/i })).toBeInTheDocument();
+  it('split individual radio selects individual mode', async () => {
+    render(OptionsPanel, { op: 'split' });
+    const individualRadio = screen.getByLabelText(/individual/i) as HTMLInputElement;
+    await fireEvent.change(individualRadio);
+    expect(individualRadio.checked).toBe(true);
   });
 });
 
 describe('OptionsPanel input values', () => {
-  it('range input reflects splitRange prop', () => {
-    render(OptionsPanel, { op: 'split', splitRange: '2-4' });
-    expect(screen.getByRole('textbox', { name: /range/i })).toHaveValue('2-4');
-  });
-
-  it('pages input reflects removePages prop', () => {
-    render(OptionsPanel, { op: 'remove', removePages: '3,5' });
-    expect(screen.getByRole('textbox', { name: /pages/i })).toHaveValue('3,5');
-  });
-
-  it('order input reflects reorderOrder prop', () => {
-    render(OptionsPanel, { op: 'reorder', reorderOrder: '3,1,2' });
-    expect(screen.getByRole('textbox', { name: /order/i })).toHaveValue('3,1,2');
-  });
-
-  it('typing in range input updates the displayed value', async () => {
-    render(OptionsPanel, { op: 'split' });
-    const input = screen.getByRole('textbox', { name: /range/i });
-    await fireEvent.input(input, { target: { value: '1-3' } });
-    expect(input).toHaveValue('1-3');
+  it('degrees combobox works for rotate op', async () => {
+    render(OptionsPanel, { op: 'rotate', rotateDegrees: 90 });
+    const select = screen.getByRole('combobox', { name: /degrees/i }) as HTMLSelectElement;
+    expect(select.value).toBe('90');
   });
 });

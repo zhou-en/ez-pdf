@@ -31,27 +31,28 @@ describe('FileList', () => {
     expect(onremove).toHaveBeenCalledWith(1);
   });
 
-  it('calls onreorder(from, to) when an item is dragged and dropped onto another', async () => {
+  it('calls onreorder(from, to) when an item is pointer-dragged onto another', async () => {
     const onreorder = vi.fn();
-    render(FileList, { files, pageCounts: {}, onremove: vi.fn(), onreorder });
+    const { container } = render(FileList, { files, pageCounts: {}, onremove: vi.fn(), onreorder });
 
     const items = screen.getAllByRole('listitem');
 
-    // drag item 0 (a.pdf) onto item 2 (c.pdf)
-    await fireEvent.dragStart(items[0], { dataTransfer: { setData: vi.fn(), effectAllowed: '' } });
-    await fireEvent.dragOver(items[2], { dataTransfer: { dropEffect: '' } });
-    await fireEvent.drop(items[2]);
+    // pointerdown on item 0, move on container, pointerup on item 2
+    await fireEvent.pointerDown(items[0]);
+    await fireEvent.pointerMove(container.querySelector('.file-list')!);
+    await fireEvent.pointerUp(items[2]);
 
     expect(onreorder).toHaveBeenCalledWith(0, 2);
   });
 
-  it('does not call onreorder when dropped on the same item', async () => {
+  it('does not call onreorder when released on the same item', async () => {
     const onreorder = vi.fn();
-    render(FileList, { files, pageCounts: {}, onremove: vi.fn(), onreorder });
+    const { container } = render(FileList, { files, pageCounts: {}, onremove: vi.fn(), onreorder });
 
     const items = screen.getAllByRole('listitem');
-    await fireEvent.dragStart(items[1]);
-    await fireEvent.drop(items[1]);
+    await fireEvent.pointerDown(items[1]);
+    await fireEvent.pointerMove(container.querySelector('.file-list')!);
+    await fireEvent.pointerUp(items[1]);
 
     expect(onreorder).not.toHaveBeenCalled();
   });

@@ -2,16 +2,12 @@
   import type { PdfMetadata, Bookmark } from '../lib/tauri';
 
   type Op = 'merge' | 'split' | 'remove' | 'rotate' | 'reorder' | 'metadata' | 'watermark' | 'bookmarks' | 'extract';
-  type SplitMode = 'range' | 'burst';
+  type SplitOutputMode = 'combined' | 'individual';
 
   let {
     op,
-    splitMode = $bindable<SplitMode>('range'),
-    splitRange = $bindable(''),
-    removePages = $bindable(''),
+    splitOutputMode = $bindable<SplitOutputMode>('combined'),
     rotateDegrees = $bindable(90),
-    rotatePages = $bindable(''),
-    reorderOrder = $bindable(''),
     metaTitle = $bindable(''),
     metaAuthor = $bindable(''),
     metaSubject = $bindable(''),
@@ -26,12 +22,8 @@
     bookmarkPage = $bindable(1),
   }: {
     op: Op;
-    splitMode?: SplitMode;
-    splitRange?: string;
-    removePages?: string;
+    splitOutputMode?: SplitOutputMode;
     rotateDegrees?: number;
-    rotatePages?: string;
-    reorderOrder?: string;
     metaTitle?: string;
     metaAuthor?: string;
     metaSubject?: string;
@@ -49,41 +41,22 @@
 
 {#if op === 'merge'}
   <!-- no op-specific inputs for merge -->
+{:else if op === 'reorder'}
+  <!-- grid drives reorder — no inputs needed -->
+{:else if op === 'remove'}
+  <!-- grid drives page selection — no inputs needed -->
 {:else if op === 'split'}
   <div class="options">
     <div class="radio-row">
       <label>
-        <input type="radio" bind:group={splitMode} value="range" />
-        Extract range
+        <input type="radio" bind:group={splitOutputMode} value="combined" />
+        Combined
       </label>
       <label>
-        <input type="radio" bind:group={splitMode} value="burst" />
-        Burst all pages
+        <input type="radio" bind:group={splitOutputMode} value="individual" />
+        Individual
       </label>
     </div>
-    {#if splitMode === 'range'}
-      <label class="field">
-        <span>Range</span>
-        <input
-          type="text"
-          bind:value={splitRange}
-          aria-label="Range"
-          placeholder="e.g. 1-3"
-        />
-      </label>
-    {/if}
-  </div>
-{:else if op === 'remove'}
-  <div class="options">
-    <label class="field">
-      <span>Pages to remove</span>
-      <input
-        type="text"
-        bind:value={removePages}
-        aria-label="Pages"
-        placeholder="e.g. 2,4-6"
-      />
-    </label>
   </div>
 {:else if op === 'rotate'}
   <div class="options">
@@ -95,27 +68,6 @@
         <option value={270}>270°</option>
         <option value={-90}>-90°</option>
       </select>
-    </label>
-    <label class="field">
-      <span>Pages (optional)</span>
-      <input
-        type="text"
-        bind:value={rotatePages}
-        aria-label="Pages"
-        placeholder="all"
-      />
-    </label>
-  </div>
-{:else if op === 'reorder'}
-  <div class="options">
-    <label class="field">
-      <span>New page order</span>
-      <input
-        type="text"
-        bind:value={reorderOrder}
-        aria-label="Order"
-        placeholder="e.g. 3,1,2"
-      />
     </label>
   </div>
 {:else if op === 'metadata'}

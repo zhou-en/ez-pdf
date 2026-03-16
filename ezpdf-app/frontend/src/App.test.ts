@@ -10,6 +10,16 @@ vi.mock('./lib/tauri', () => ({
   cmdRotate: vi.fn(),
   cmdReorder: vi.fn(),
   cmdPageCount: vi.fn().mockResolvedValue(5),
+  cmdInfo: vi.fn().mockResolvedValue({
+    page_count: 3,
+    dimensions: [[612, 792], [612, 792], [612, 792]],
+  }),
+  cmdGetMetadata: vi.fn().mockResolvedValue({}),
+  cmdListBookmarks: vi.fn().mockResolvedValue([]),
+  cmdWatermark: vi.fn(),
+  cmdSetMetadata: vi.fn(),
+  cmdAddBookmark: vi.fn(),
+  cmdExtractImages: vi.fn(),
 }));
 
 vi.mock('./lib/dnd', () => ({
@@ -190,7 +200,7 @@ describe('App', () => {
     expect(screen.queryByText(/1 pages/i)).not.toBeInTheDocument();
   });
 
-  it('burst mode output path is a directory (no .pdf), range mode is a .pdf file', async () => {
+  it('split combined output path ends in .pdf', async () => {
     let dropHandler: ((paths: string[]) => void) | undefined;
     mockOnFileDrop.mockImplementation(async (handler) => {
       dropHandler = handler;
@@ -198,7 +208,6 @@ describe('App', () => {
     });
     const mocks = await import('./lib/tauri');
     vi.mocked(mocks.cmdSplitRange).mockResolvedValue('ok');
-    vi.mocked(mocks.cmdSplitEach).mockResolvedValue('ok');
 
     render(App);
     await vi.waitFor(() => expect(dropHandler).toBeDefined());
@@ -206,69 +215,16 @@ describe('App', () => {
     dropHandler!(['/home/user/doc.pdf']);
     await vi.waitFor(() => expect(screen.getByRole('button', { name: /run split/i })).not.toBeDisabled());
 
-    // Switch to burst — output should NOT end in .pdf
-    await fireEvent.change(screen.getByLabelText(/burst all pages/i));
-    await fireEvent.click(screen.getByRole('button', { name: /run split/i }));
-    await vi.waitFor(() => expect(vi.mocked(mocks.cmdSplitEach)).toHaveBeenCalled());
-    const burstCall = vi.mocked(mocks.cmdSplitEach).mock.calls[0];
-    expect(burstCall[1]).not.toMatch(/\.pdf$/i);
+    // select a page tile and run
+    const { cmdInfo } = await import('./lib/tauri');
+    await vi.waitFor(() => expect(vi.mocked(cmdInfo)).toHaveBeenCalled());
+    const tileBtns = screen.getAllByRole('button').filter(b => /^[0-9]+$/.test(b.textContent?.replace(/\s+/g, '') ?? ''));
+    await fireEvent.click(tileBtns[0]);
 
-    // Switch back to range — output should end in .pdf
-    await fireEvent.change(screen.getByLabelText(/extract range/i));
-    const rangeInput = screen.getByRole('textbox', { name: /range/i });
-    await fireEvent.input(rangeInput, { target: { value: '1-2' } });
     await fireEvent.click(screen.getByRole('button', { name: /run split/i }));
     await vi.waitFor(() => expect(vi.mocked(mocks.cmdSplitRange)).toHaveBeenCalled());
-    const rangeCall = vi.mocked(mocks.cmdSplitRange).mock.calls[0];
-    expect(rangeCall[2]).toMatch(/\.pdf$/i);
-    // Crucially, range output path must differ from burst output path
-    expect(rangeCall[2]).not.toBe(burstCall[1]);
-  });
-
-  it('typed split range reaches the backend', async () => {
-    let dropHandler: ((paths: string[]) => void) | undefined;
-    mockOnFileDrop.mockImplementation(async (handler) => {
-      dropHandler = handler;
-      return vi.fn();
-    });
-    const mockSplitRange = vi.mocked((await import('./lib/tauri')).cmdSplitRange);
-    mockSplitRange.mockResolvedValue('Split → /home/user/doc-split.pdf');
-
-    render(App);
-    await vi.waitFor(() => expect(dropHandler).toBeDefined());
-    await fireEvent.click(screen.getByRole('button', { name: /^split$/i }));
-    dropHandler!(['/home/user/doc.pdf']);
-
-    await vi.waitFor(() => expect(screen.getByRole('button', { name: /run split/i })).not.toBeDisabled());
-
-    const rangeInput = screen.getByPlaceholderText('e.g. 1-3');
-    await fireEvent.input(rangeInput, { target: { value: '1-2' } });
-
-    await fireEvent.click(screen.getByRole('button', { name: /run split/i }));
-
-    await vi.waitFor(() =>
-      expect(mockSplitRange).toHaveBeenCalledWith('/home/user/doc.pdf', '1-2', expect.any(String))
-    );
-  });
-
-  it('shows validation error when split range mode is selected but range is empty', async () => {
-    let dropHandler: ((paths: string[]) => void) | undefined;
-    mockOnFileDrop.mockImplementation(async (handler) => {
-      dropHandler = handler;
-      return vi.fn();
-    });
-
-    render(App);
-    await vi.waitFor(() => expect(dropHandler).toBeDefined());
-
-    // Switch to Split first, then drop a file so it belongs to Split's file list
-    await fireEvent.click(screen.getByRole('button', { name: /^split$/i }));
-    dropHandler!(['/home/user/doc.pdf']);
-
-    await vi.waitFor(() => expect(screen.getByRole('button', { name: /run split/i })).not.toBeDisabled());
-    await fireEvent.click(screen.getByRole('button', { name: /run split/i }));
-
-    expect(await screen.findByText(/enter a page range/i)).toBeInTheDocument();
+    const call = vi.mocked(mocks.cmdSplitRange).mock.calls[0];
+    expect(call[2]).toMatch(/\.pdf$/i);
   });
 
   it('status message clears when switching operations', async () => {
@@ -368,5 +324,111 @@ describe('App', () => {
       ['/home/user/report.pdf'],
       '/home/user/report-merged.pdf'
     );
+  });
+
+  // ── Phase 24: grid-driven op tests ────────────────────────────────────────
+
+  async function setupGridOp(opName: string) {
+    const { cmdInfo } = await import('./lib/tauri');
+    let dropHandler: ((paths: string[]) => void) | undefined;
+    mockOnFileDrop.mockImplementation(async (handler) => {
+      dropHandler = handler;
+      return vi.fn();
+    });
+    render(App);
+    await vi.waitFor(() => expect(dropHandler).toBeDefined());
+    await fireEvent.click(screen.getByRole('button', { name: new RegExp(`^${opName}$`, 'i') }));
+    dropHandler!(['/home/user/doc.pdf']);
+    // Wait for cmdInfo to be called and tiles to appear
+    await vi.waitFor(() => expect(vi.mocked(cmdInfo)).toHaveBeenCalledWith('/home/user/doc.pdf'));
+    // Wait for 3 tile buttons to appear
+    await vi.waitFor(() => expect(screen.getAllByRole('button').filter(b => /^[0-9]+$/.test(b.textContent?.replace(/\s+/g, '') ?? ''))).toHaveLength(3));
+    return { cmdInfo };
+  }
+
+  it('dropping file on remove op calls cmdInfo and shows page tiles', async () => {
+    await setupGridOp('remove');
+    // Tiles labeled 1, 2, 3 should be visible
+    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
+  });
+
+  it('run remove with selected tiles calls cmdRemove with page numbers', async () => {
+    const { cmdRemove } = await import('./lib/tauri');
+    vi.mocked(cmdRemove).mockResolvedValue('Removed → out.pdf');
+    await setupGridOp('remove');
+
+    const tileBtns = screen.getAllByRole('button').filter(b => /^[0-9]+$/.test(b.textContent?.replace(/\s+/g, '') ?? ''));
+    await fireEvent.click(tileBtns[0]); // select page 1
+    await fireEvent.click(tileBtns[2]); // select page 3
+
+    await fireEvent.click(screen.getByRole('button', { name: /run remove/i }));
+
+    await vi.waitFor(() =>
+      expect(vi.mocked(cmdRemove)).toHaveBeenCalledWith('/home/user/doc.pdf', '1,3', expect.any(String))
+    );
+  });
+
+  it('run reorder calls cmdReorder with tile order from grid', async () => {
+    const { cmdReorder } = await import('./lib/tauri');
+    vi.mocked(cmdReorder).mockResolvedValue('Reordered → out.pdf');
+    await setupGridOp('reorder');
+
+    // Without any drag, tile order is 1,2,3 — reorder should be called with that order
+    await fireEvent.click(screen.getByRole('button', { name: /run reorder/i }));
+
+    await vi.waitFor(() =>
+      expect(vi.mocked(cmdReorder)).toHaveBeenCalledWith('/home/user/doc.pdf', '1,2,3', expect.any(String))
+    );
+  });
+
+  it('run rotate with selected tiles calls cmdRotate with page numbers', async () => {
+    const { cmdRotate } = await import('./lib/tauri');
+    vi.mocked(cmdRotate).mockResolvedValue('Rotated → out.pdf');
+    await setupGridOp('rotate');
+
+    const tileBtns = screen.getAllByRole('button').filter(b => /^[0-9]+$/.test(b.textContent?.replace(/\s+/g, '') ?? ''));
+    await fireEvent.click(tileBtns[1]); // select page 2
+
+    await fireEvent.click(screen.getByRole('button', { name: /run rotate/i }));
+
+    await vi.waitFor(() =>
+      expect(vi.mocked(cmdRotate)).toHaveBeenCalledWith('/home/user/doc.pdf', expect.any(Number), '2', expect.any(String))
+    );
+  });
+
+  it('run split combined calls cmdSplitRange with selected pages', async () => {
+    const { cmdSplitRange } = await import('./lib/tauri');
+    vi.mocked(cmdSplitRange).mockResolvedValue('Split → out.pdf');
+    await setupGridOp('split');
+
+    const tileBtns = screen.getAllByRole('button').filter(b => /^[0-9]+$/.test(b.textContent?.replace(/\s+/g, '') ?? ''));
+    await fireEvent.click(tileBtns[0]); // select page 1
+    await fireEvent.click(tileBtns[1]); // select page 2
+
+    await fireEvent.click(screen.getByRole('button', { name: /run split/i }));
+
+    await vi.waitFor(() =>
+      expect(vi.mocked(cmdSplitRange)).toHaveBeenCalledWith('/home/user/doc.pdf', '1,2', expect.any(String))
+    );
+  });
+
+  it('error shown when no pages selected for remove', async () => {
+    await setupGridOp('remove');
+    await fireEvent.click(screen.getByRole('button', { name: /run remove/i }));
+    expect(await screen.findByText(/select at least one page/i)).toBeInTheDocument();
+  });
+
+  it('error shown when no pages selected for rotate', async () => {
+    await setupGridOp('rotate');
+    await fireEvent.click(screen.getByRole('button', { name: /run rotate/i }));
+    expect(await screen.findByText(/select at least one page/i)).toBeInTheDocument();
+  });
+
+  it('error shown when no pages selected for split', async () => {
+    await setupGridOp('split');
+    await fireEvent.click(screen.getByRole('button', { name: /run split/i }));
+    expect(await screen.findByText(/select at least one page/i)).toBeInTheDocument();
   });
 });

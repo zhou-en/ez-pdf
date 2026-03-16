@@ -92,3 +92,12 @@ export async function cmdAddBookmark(
 export async function cmdExtractImages(input: string, outputDir: string): Promise<string> {
   return invoke<string>('cmd_extract_images', { input, outputDir });
 }
+
+export interface PdfInfo {
+  page_count: number;
+  dimensions: [number, number][];
+}
+
+export async function cmdInfo(input: string): Promise<PdfInfo> {
+  return invoke<PdfInfo>('cmd_info', { input });
+}
