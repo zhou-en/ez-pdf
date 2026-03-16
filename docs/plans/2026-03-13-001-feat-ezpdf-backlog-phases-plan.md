@@ -191,7 +191,9 @@ EZPDF v1 (v0.1.1) shipped on 2026-03-13 with 5 core PDF operations, CLI polish, 
 
 ## Phase 14: Windows Support
 
-**Target:** v1.2
+> **Dropped — personal use only (macOS + Linux).**
+
+**Target:** v1.2 — skipped
 **Backlog:** B6 — "Windows support"
 
 ### Definition of Done

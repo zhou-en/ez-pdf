@@ -1029,6 +1029,4 @@ _None yet. Blockers found during stories will be injected here._
 
 ## Phase 21: Windows Support
 
-> **TODO — Deferred. Implement after the desktop app when Windows demand warrants it.**
-
-- [x] **21.0 [TODO]** Windows support deferred — add to a future planning session.
+> **Dropped — personal use only (macOS + Linux). Not needed.**
