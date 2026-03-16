@@ -1,12 +1,13 @@
 use std::path::Path;
 
 use lopdf::{Dictionary, Object, ObjectId};
+use serde::Serialize;
 
 use crate::error::EzPdfError;
 use crate::merge::load_doc;
 
 /// A single entry in the PDF outline (bookmark) tree.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Bookmark {
     pub title: String,
     pub page: u32,

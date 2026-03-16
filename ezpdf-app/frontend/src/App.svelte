@@ -4,17 +4,22 @@
   import FileList from './components/FileList.svelte';
   import OptionsPanel from './components/OptionsPanel.svelte';
   import ProgressBar from './components/ProgressBar.svelte';
-  import { cmdMerge, cmdSplitRange, cmdSplitEach, cmdRemove, cmdRotate, cmdReorder, cmdPageCount } from './lib/tauri';
+  import {
+    cmdMerge, cmdSplitRange, cmdSplitEach, cmdRemove, cmdRotate, cmdReorder, cmdPageCount,
+    cmdGetMetadata, cmdSetMetadata, cmdWatermark, cmdListBookmarks, cmdAddBookmark, cmdExtractImages,
+  } from './lib/tauri';
+  import type { PdfMetadata, Bookmark } from './lib/tauri';
   import { saveOutputPath, pickOutputDir } from './lib/dialog';
 
-  type Op = 'merge' | 'split' | 'remove' | 'rotate' | 'reorder';
+  type Op = 'merge' | 'split' | 'remove' | 'rotate' | 'reorder' | 'metadata' | 'watermark' | 'bookmarks' | 'extract';
   type Status = { type: 'idle' | 'success' | 'error'; message: string };
 
-  const ops: Op[] = ['merge', 'split', 'remove', 'rotate', 'reorder'];
+  const ops: Op[] = ['merge', 'split', 'remove', 'rotate', 'reorder', 'metadata', 'watermark', 'bookmarks', 'extract'];
 
   // Per-operation file lists
   let filesByOp: Record<Op, string[]> = $state({
     merge: [], split: [], remove: [], rotate: [], reorder: [],
+    metadata: [], watermark: [], bookmarks: [], extract: [],
   });
 
   let selectedOp: Op = $state('merge');
@@ -24,6 +29,7 @@
   // Per-operation output path overrides
   let outputOverride: Record<Op, string> = $state({
     merge: '', split: '', remove: '', rotate: '', reorder: '',
+    metadata: '', watermark: '', bookmarks: '', extract: '',
   });
 
   // Options state
@@ -33,6 +39,24 @@
   let rotateDegrees = $state(90);
   let rotatePages = $state('');
   let reorderOrder = $state('');
+
+  // Metadata op state
+  let metaTitle = $state('');
+  let metaAuthor = $state('');
+  let metaSubject = $state('');
+  let metaKeywords = $state('');
+  let loadedMeta = $state<PdfMetadata | null>(null);
+
+  // Watermark op state
+  let watermarkText = $state('');
+  let watermarkFontSize = $state(48);
+  let watermarkOpacity = $state(0.3);
+  let watermarkPages = $state('');
+
+  // Bookmarks op state
+  let bookmarksList = $state<Bookmark[]>([]);
+  let bookmarkTitle = $state('');
+  let bookmarkPage = $state(1);
 
   let files = $derived(filesByOp[selectedOp]);
 
@@ -45,6 +69,22 @@
       cmdPageCount(p).then((n) => {
         pageCounts = { ...pageCounts, [p]: n };
       }).catch(() => {/* ignore if count fails */});
+    }
+    // Auto-load metadata / bookmarks when first file is added for those ops
+    if (paths.length > 0) {
+      if (selectedOp === 'metadata') {
+        cmdGetMetadata(paths[0]).then((m) => {
+          loadedMeta = m;
+          metaTitle = m.title ?? '';
+          metaAuthor = m.author ?? '';
+          metaSubject = m.subject ?? '';
+          metaKeywords = m.keywords ?? '';
+        }).catch(() => {});
+      } else if (selectedOp === 'bookmarks') {
+        cmdListBookmarks(paths[0]).then((bms) => {
+          bookmarksList = bms;
+        }).catch(() => {});
+      }
     }
   }
 
@@ -81,6 +121,10 @@
     remove: 'removed',
     rotate: 'rotated',
     reorder: 'reordered',
+    metadata: 'meta',
+    watermark: 'watermarked',
+    bookmarks: 'bookmarked',
+    extract: 'images',
   };
 
   function defaultOutput(op: Op): string {
@@ -90,6 +134,9 @@
     if (op === 'split' && splitMode === 'burst') {
       return `${dir}${base}-pages`;
     }
+    if (op === 'extract') {
+      return `${dir}${base}-images`;
+    }
     return `${dir}${base}-${opSuffix[op]}.pdf`;
   }
 
@@ -98,9 +145,9 @@
   }
 
   async function handleSaveAs() {
-    const isBurst = selectedOp === 'split' && splitMode === 'burst';
+    const needsDir = (selectedOp === 'split' && splitMode === 'burst') || selectedOp === 'extract';
     const def = defaultOutput(selectedOp);
-    const picked = isBurst
+    const picked = needsDir
       ? await pickOutputDir(def)
       : await saveOutputPath(def);
     if (picked) {
@@ -125,6 +172,14 @@
       status = { type: 'error', message: 'Enter the new page order (e.g. 3,1,2).' };
       return;
     }
+    if (selectedOp === 'watermark' && watermarkText.trim() === '') {
+      status = { type: 'error', message: 'Enter watermark text.' };
+      return;
+    }
+    if (selectedOp === 'bookmarks' && bookmarkTitle.trim() === '') {
+      status = { type: 'error', message: 'Enter a bookmark title.' };
+      return;
+    }
     running = true;
     status = { type: 'idle', message: '' };
     try {
@@ -142,8 +197,26 @@
         msg = await cmdRemove(files[0], removePages, out);
       } else if (selectedOp === 'rotate') {
         msg = await cmdRotate(files[0], rotateDegrees, rotatePages || null, out);
-      } else {
+      } else if (selectedOp === 'reorder') {
         msg = await cmdReorder(files[0], reorderOrder, out);
+      } else if (selectedOp === 'metadata') {
+        msg = await cmdSetMetadata(
+          files[0], out,
+          metaTitle || null, metaAuthor || null,
+          metaSubject || null, metaKeywords || null,
+          null, null,
+        );
+      } else if (selectedOp === 'watermark') {
+        msg = await cmdWatermark(
+          files[0], watermarkText, watermarkFontSize, watermarkOpacity,
+          watermarkPages || null, out,
+        );
+      } else if (selectedOp === 'bookmarks') {
+        msg = await cmdAddBookmark(files[0], bookmarkTitle, bookmarkPage, out);
+        bookmarksList = await cmdListBookmarks(out);
+      } else {
+        // extract
+        msg = await cmdExtractImages(files[0], out);
       }
       status = { type: 'success', message: msg };
     } catch (err) {
@@ -187,6 +260,18 @@
       bind:rotateDegrees
       bind:rotatePages
       bind:reorderOrder
+      bind:metaTitle
+      bind:metaAuthor
+      bind:metaSubject
+      bind:metaKeywords
+      bind:loadedMeta
+      bind:watermarkText
+      bind:watermarkFontSize
+      bind:watermarkOpacity
+      bind:watermarkPages
+      bind:bookmarksList
+      bind:bookmarkTitle
+      bind:bookmarkPage
     />
 
     <button class="run-btn" onclick={run} disabled={files.length === 0 || running}>

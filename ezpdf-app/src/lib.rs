@@ -12,6 +12,12 @@ pub fn run() {
             commands::cmd_rotate,
             commands::cmd_reorder,
             commands::cmd_page_count,
+            commands::cmd_get_metadata,
+            commands::cmd_set_metadata,
+            commands::cmd_watermark,
+            commands::cmd_list_bookmarks,
+            commands::cmd_add_bookmark,
+            commands::cmd_extract_images,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -19,6 +25,7 @@ pub fn run() {
 
 #[cfg(test)]
 mod tests {
+    #[allow(unused_imports)]
     use crate::commands::*;
     use std::path::PathBuf;
     use tempfile::TempDir;
@@ -105,5 +112,90 @@ mod tests {
         let result = cmd_reorder(fixture("3page.pdf"), "3,1,2".to_string(), output.clone());
         assert!(result.is_ok(), "expected Ok, got: {:?}", result);
         assert_eq!(page_count(&output), 3);
+    }
+
+    // ── Phase 22 tests ────────────────────────────────────────────────────────
+
+    #[test]
+    fn cmd_get_metadata_returns_ok() {
+        let result = cmd_get_metadata(fixture("3page.pdf"));
+        assert!(result.is_ok(), "expected Ok, got: {:?}", result);
+    }
+
+    #[test]
+    fn cmd_set_metadata_writes_fields() {
+        let tmp = TempDir::new().unwrap();
+        let output = tmp.path().join("meta.pdf").to_string_lossy().into_owned();
+        let result = cmd_set_metadata(
+            fixture("3page.pdf"),
+            output.clone(),
+            Some("My Title".to_string()),
+            Some("Alice".to_string()),
+            None,
+            None,
+            None,
+            None,
+        );
+        assert!(result.is_ok(), "expected Ok, got: {:?}", result);
+        let meta = cmd_get_metadata(output).unwrap();
+        assert_eq!(meta.title, Some("My Title".to_string()));
+        assert_eq!(meta.author, Some("Alice".to_string()));
+    }
+
+    #[test]
+    fn cmd_watermark_produces_output() {
+        let tmp = TempDir::new().unwrap();
+        let output = tmp
+            .path()
+            .join("watermarked.pdf")
+            .to_string_lossy()
+            .into_owned();
+        let result = cmd_watermark(
+            fixture("3page.pdf"),
+            "DRAFT".to_string(),
+            48.0,
+            0.3,
+            None,
+            output.clone(),
+        );
+        assert!(result.is_ok(), "expected Ok, got: {:?}", result);
+        assert_eq!(page_count(&output), 3);
+    }
+
+    #[test]
+    fn cmd_list_bookmarks_returns_ok() {
+        let result = cmd_list_bookmarks(fixture("3page.pdf"));
+        assert!(result.is_ok(), "expected Ok, got: {:?}", result);
+    }
+
+    #[test]
+    fn cmd_add_bookmark_creates_bookmark() {
+        let tmp = TempDir::new().unwrap();
+        let output = tmp
+            .path()
+            .join("bookmarked.pdf")
+            .to_string_lossy()
+            .into_owned();
+        let result = cmd_add_bookmark(
+            fixture("3page.pdf"),
+            "Chapter 1".to_string(),
+            1,
+            output.clone(),
+        );
+        assert!(result.is_ok(), "expected Ok, got: {:?}", result);
+        let bookmarks = cmd_list_bookmarks(output).unwrap();
+        assert_eq!(bookmarks.len(), 1);
+        assert_eq!(bookmarks[0].title, "Chapter 1");
+        assert_eq!(bookmarks[0].page, 1);
+    }
+
+    #[test]
+    fn cmd_extract_images_returns_ok() {
+        let tmp = TempDir::new().unwrap();
+        let result = cmd_extract_images(
+            fixture("3page.pdf"),
+            tmp.path().to_string_lossy().into_owned(),
+        );
+        assert!(result.is_ok(), "expected Ok, got: {:?}", result);
     }
 }
