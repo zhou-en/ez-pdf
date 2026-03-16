@@ -1,8 +1,11 @@
 <script lang="ts">
   import Sidebar from './components/Sidebar.svelte';
   import DropZone from './components/DropZone.svelte';
+  import FileList from './components/FileList.svelte';
   import OptionsPanel from './components/OptionsPanel.svelte';
+  import ProgressBar from './components/ProgressBar.svelte';
   import { cmdMerge, cmdSplitRange, cmdSplitEach, cmdRemove, cmdRotate, cmdReorder, cmdPageCount } from './lib/tauri';
+  import { saveOutputPath, pickOutputDir } from './lib/dialog';
 
   type Op = 'merge' | 'split' | 'remove' | 'rotate' | 'reorder';
   type Status = { type: 'idle' | 'success' | 'error'; message: string };
@@ -17,6 +20,11 @@
   let selectedOp: Op = $state('merge');
   let status: Status = $state({ type: 'idle', message: '' });
   let running = $state(false);
+
+  // Per-operation output path overrides
+  let outputOverride: Record<Op, string> = $state({
+    merge: '', split: '', remove: '', rotate: '', reorder: '',
+  });
 
   // Options state
   let splitMode = $state('range');
@@ -47,6 +55,13 @@
     };
   }
 
+  function reorderFiles(from: number, to: number) {
+    const list = [...filesByOp[selectedOp]];
+    const [moved] = list.splice(from, 1);
+    list.splice(to, 0, moved);
+    filesByOp = { ...filesByOp, [selectedOp]: list };
+  }
+
   function basename(path: string): string {
     return path.replace(/^.*[/\\]/, '');
   }
@@ -72,11 +87,25 @@
     if (files.length === 0) return '';
     const dir = dirname(files[0]);
     const base = stem(files[0]);
-    // Burst mode outputs a directory of pages, not a single PDF
     if (op === 'split' && splitMode === 'burst') {
       return `${dir}${base}-pages`;
     }
     return `${dir}${base}-${opSuffix[op]}.pdf`;
+  }
+
+  function resolvedOutput(op: Op): string {
+    return outputOverride[op] || defaultOutput(op);
+  }
+
+  async function handleSaveAs() {
+    const isBurst = selectedOp === 'split' && splitMode === 'burst';
+    const def = defaultOutput(selectedOp);
+    const picked = isBurst
+      ? await pickOutputDir(def)
+      : await saveOutputPath(def);
+    if (picked) {
+      outputOverride = { ...outputOverride, [selectedOp]: picked };
+    }
   }
 
   async function run() {
@@ -100,7 +129,7 @@
     status = { type: 'idle', message: '' };
     try {
       let msg: string;
-      const out = defaultOutput(selectedOp);
+      const out = resolvedOutput(selectedOp);
       if (selectedOp === 'merge') {
         msg = await cmdMerge(files, out);
       } else if (selectedOp === 'split') {
@@ -126,27 +155,28 @@
 </script>
 
 <div class="app">
-  <Sidebar {selectedOp} onopSelected={(op) => { selectedOp = op; status = { type: 'idle', message: '' }; }} />
+  <Sidebar {selectedOp} onopSelected={(op) => {
+    selectedOp = op;
+    status = { type: 'idle', message: '' };
+  }} />
 
   <main>
     <DropZone onfilesAdded={addFiles} />
 
     {#if files.length > 0}
-      <ul class="file-list">
-        {#each files as file, i}
-          <li>
-            <span>{basename(file)}</span>
-            {#if pageCounts[file] !== undefined}
-              <span class="page-count">{pageCounts[file]} {pageCounts[file] === 1 ? 'page' : 'pages'}</span>
-            {/if}
-            <button
-              class="remove-btn"
-              aria-label="Remove {basename(file)}"
-              onclick={() => removeFile(i)}
-            >×</button>
-          </li>
-        {/each}
-      </ul>
+      <FileList
+        {files}
+        {pageCounts}
+        onremove={removeFile}
+        onreorder={reorderFiles}
+      />
+
+      <div class="output-row">
+        <span class="output-path">{resolvedOutput(selectedOp)}</span>
+        <button class="save-as-btn" onclick={handleSaveAs} aria-label="Save as">
+          Save As…
+        </button>
+      </div>
     {/if}
 
     <OptionsPanel
@@ -167,6 +197,8 @@
       {/if}
     </button>
 
+    <ProgressBar visible={running} />
+
     {#if status.type !== 'idle'}
       <p class="status {status.type}">{status.message}</p>
     {/if}
@@ -174,10 +206,38 @@
 </div>
 
 <style>
+  :root {
+    --bg: #ffffff;
+    --bg-sidebar: #1e293b;
+    --text: #111827;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --file-item-bg: #f3f4f6;
+    --run-btn: #2563eb;
+    --run-btn-hover: #1d4ed8;
+    --run-btn-disabled: #93c5fd;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111827;
+      --bg-sidebar: #0f172a;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+      --border: #374151;
+      --file-item-bg: #1f2937;
+      --run-btn: #3b82f6;
+      --run-btn-hover: #2563eb;
+      --run-btn-disabled: #1e3a5f;
+    }
+  }
+
   .app {
     display: flex;
     height: 100vh;
     font-family: system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
   }
 
   main {
@@ -186,52 +246,43 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    overflow-y: auto;
   }
 
-  .file-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .file-list li {
+  .output-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0.25rem 0.5rem;
-    background: #f3f4f6;
-    border-radius: 4px;
-    margin-bottom: 0.25rem;
-    font-size: 0.875rem;
+    gap: 0.75rem;
+    font-size: 0.8rem;
   }
 
-  .page-count {
-    margin-left: auto;
-    margin-right: 0.5rem;
-    font-size: 0.75rem;
-    color: #6b7280;
+  .output-path {
+    flex: 1;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .remove-btn {
+  .save-as-btn {
     background: none;
-    border: none;
-    color: #9ca3af;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 4px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.8rem;
     cursor: pointer;
-    font-size: 1rem;
-    line-height: 1;
-    padding: 0 0.25rem;
-    border-radius: 3px;
+    white-space: nowrap;
   }
 
-  .remove-btn:hover {
-    color: #ef4444;
-    background: #fee2e2;
+  .save-as-btn:hover {
+    background: var(--file-item-bg);
   }
 
   .run-btn {
     align-self: flex-start;
     padding: 0.5rem 1.5rem;
-    background: #2563eb;
+    background: var(--run-btn);
     color: white;
     border: none;
     border-radius: 6px;
@@ -240,12 +291,12 @@
   }
 
   .run-btn:disabled {
-    background: #93c5fd;
+    background: var(--run-btn-disabled);
     cursor: not-allowed;
   }
 
   .run-btn:not(:disabled):hover {
-    background: #1d4ed8;
+    background: var(--run-btn-hover);
   }
 
   .status {

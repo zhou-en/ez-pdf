@@ -16,15 +16,24 @@ vi.mock('./lib/dnd', () => ({
   onFileDrop: vi.fn().mockResolvedValue(vi.fn()),
 }));
 
+vi.mock('./lib/dialog', () => ({
+  openPdfFiles: vi.fn(),
+  saveOutputPath: vi.fn(),
+  pickOutputDir: vi.fn(),
+}));
+
 import { cmdMerge } from './lib/tauri';
 import { onFileDrop } from './lib/dnd';
+import { saveOutputPath } from './lib/dialog';
 
 const mockCmdMerge = vi.mocked(cmdMerge);
 const mockOnFileDrop = vi.mocked(onFileDrop);
+const mockSaveOutputPath = vi.mocked(saveOutputPath);
 
 beforeEach(() => {
   vi.clearAllMocks();
   mockOnFileDrop.mockResolvedValue(vi.fn());
+  mockSaveOutputPath.mockResolvedValue(null);
 });
 
 describe('App', () => {
@@ -290,6 +299,66 @@ describe('App', () => {
 
     render(App);
 
+    await vi.waitFor(() => expect(dropHandler).toBeDefined());
+    dropHandler!(['/home/user/report.pdf']);
+
+    await fireEvent.click(screen.getByRole('button', { name: /run/i }));
+
+    expect(mockCmdMerge).toHaveBeenCalledWith(
+      ['/home/user/report.pdf'],
+      '/home/user/report-merged.pdf'
+    );
+  });
+
+  it('Save As button is visible when a file is loaded', async () => {
+    let dropHandler: ((paths: string[]) => void) | undefined;
+    mockOnFileDrop.mockImplementation(async (handler) => {
+      dropHandler = handler;
+      return vi.fn();
+    });
+
+    render(App);
+    await vi.waitFor(() => expect(dropHandler).toBeDefined());
+    dropHandler!(['/home/user/doc.pdf']);
+
+    await vi.waitFor(() => expect(screen.getByRole('button', { name: /save as/i })).toBeInTheDocument());
+  });
+
+  it('Save As path overrides the default output when Run is clicked', async () => {
+    let dropHandler: ((paths: string[]) => void) | undefined;
+    mockOnFileDrop.mockImplementation(async (handler) => {
+      dropHandler = handler;
+      return vi.fn();
+    });
+    mockCmdMerge.mockResolvedValue('ok');
+    mockSaveOutputPath.mockResolvedValue('/custom/my-output.pdf');
+
+    render(App);
+    await vi.waitFor(() => expect(dropHandler).toBeDefined());
+    dropHandler!(['/home/user/doc.pdf']);
+
+    await fireEvent.click(await screen.findByRole('button', { name: /save as/i }));
+    await vi.waitFor(() => expect(mockSaveOutputPath).toHaveBeenCalled());
+
+    await fireEvent.click(screen.getByRole('button', { name: /run/i }));
+
+    expect(mockCmdMerge).toHaveBeenCalledWith(
+      ['/home/user/doc.pdf'],
+      '/custom/my-output.pdf'
+    );
+  });
+
+  it('Run uses default output path when Save As is not used', async () => {
+    let dropHandler: ((paths: string[]) => void) | undefined;
+    mockOnFileDrop.mockImplementation(async (handler) => {
+      dropHandler = handler;
+      return vi.fn();
+    });
+    mockCmdMerge.mockResolvedValue('ok');
+    // saveOutputPath returns null (user cancelled)
+    mockSaveOutputPath.mockResolvedValue(null);
+
+    render(App);
     await vi.waitFor(() => expect(dropHandler).toBeDefined());
     dropHandler!(['/home/user/report.pdf']);
 
