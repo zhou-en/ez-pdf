@@ -1,12 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Read(/Users/enzhou/Projects/ez-pdf/**)",
-      "Write(/Users/enzhou/Projects/ez-pdf/**)",
-      "Edit(/Users/enzhou/Projects/ez-pdf/**)",
-      "Glob(/Users/enzhou/Projects/ez-pdf/**)",
-      "Read(/Users/enzhou/Projects/docs/**)",
-      "Read(/Users/enzhou/Library/CloudStorage/Dropbox/ObsidianVault/**)",
+      "Read(/home/nathan/Projects/ez-pdf/**)",
+      "Write(/home/nathan/Projects/ez-pdf/**)",
+      "Edit(/home/nathan/Projects/ez-pdf/**)",
+      "Glob(/home/nathan/Projects/ez-pdf/**)",
+      "Read(/home/nathan/Dropbox/ObsidianVault/**)",
       "Bash(cargo *)",
       "Bash(git *)",
       "Bash(gh *)",
@@ -31,8 +30,7 @@
       "Bash(date *)"
     ],
     "additionalDirectories": [
-      "/Users/enzhou/Projects/ez-pdf/",
-      "/Users/enzhou/Projects/docs/"
+      "/home/nathan/Projects/ez-pdf/"
     ]
   }
 }
