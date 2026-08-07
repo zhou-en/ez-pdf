@@ -20,6 +20,7 @@
    - [watermark](#watermark)
    - [bookmarks](#bookmarks)
    - [images](#images)
+   - [markdown](#markdown)
    - [optimize](#optimize)
    - [completions](#completions)
 5. [Batch Operations](#batch-operations)
@@ -426,6 +427,39 @@ Images are named `page-{N}-image-{M}.jpg` (JPEG) or `page-{N}-image-{M}.png` (ot
 
 ---
 
+### markdown
+
+Convert a PDF to a Markdown file. Headings, lists, tables, code blocks and links are inferred from the document's layout and fonts.
+
+```
+ezpdf markdown <FILE> -o <OUTPUT> [--pages <RANGE>] [--no-page-breaks] [--batch] [-q]
+```
+
+```bash
+# Whole document
+ezpdf markdown report.pdf -o report.md
+
+# Only the first five pages
+ezpdf markdown report.pdf --pages 1-5 -o intro.md
+
+# One .md per PDF in a directory
+ezpdf markdown ./reports --batch -o ./markdown/
+```
+
+Pages are separated by a `---` rule. The separator before the first page is omitted deliberately — a leading `---` would be read as YAML frontmatter by Obsidian, Jekyll and Hugo. Pass `--no-page-breaks` to drop the separators entirely.
+
+Images are not included; use [`ezpdf images`](#images) to extract them separately.
+
+With `--batch`, each input is written to `<output-dir>/<name>.md`.
+
+**Output:** `Converted to Markdown → report.md`
+
+> Unlike every other command, `markdown` does not produce a PDF — it is a read-only extractor, so the lossless guarantee does not apply. The source file is never modified.
+
+> Scanned PDFs have no text layer to extract. Rather than write an empty file, `markdown` fails and names the remedy: run the file through an OCR tool such as `ocrmypdf` first.
+
+---
+
 ### optimize
 
 Remove unreferenced objects from a PDF to reduce file size.
@@ -636,6 +670,7 @@ ezpdf bookmarks list report.pdf --json | jq '.[].title'
 | `invalid page range syntax 'X': hint` | Malformed range string | See [Page Range Syntax](#page-range-syntax) |
 | `PDF is password-protected` | Encrypted PDF opened without a password | Add `--password <pw>` or `--password-file` |
 | `wrong PDF password` | Incorrect password provided | Check the password and retry |
+| `no extractable text layer on page(s) [...]` | `ezpdf markdown` on a scanned/image-only PDF | Run `ocrmypdf input.pdf output.pdf` first, then retry |
 | `cannot remove all N pages` | The pages to remove covers every page | Keep at least one page |
 | `I/O error: No such file or directory` | Input file path is wrong | Check the path; use quotes for paths with spaces |
 | `Error: ` (generic, to stderr) | Any unrecoverable error | Full message follows the prefix; exit code is `1` |

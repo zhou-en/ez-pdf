@@ -58,4 +58,11 @@ describe('OptionsPanel input values', () => {
     const select = screen.getByRole('combobox', { name: /degrees/i }) as HTMLSelectElement;
     expect(select.value).toBe('90');
   });
+
+  it('markdown op shows the page break checkbox, checked by default', () => {
+    render(OptionsPanel, { op: 'markdown' });
+    const checkbox = screen.getByLabelText(/insert page break separators/i) as HTMLInputElement;
+    expect(checkbox).toBeInTheDocument();
+    expect(checkbox.checked).toBe(true);
+  });
 });

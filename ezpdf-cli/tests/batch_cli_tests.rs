@@ -110,3 +110,31 @@ fn rotate_batch_nonexistent_dir_exits_with_error() {
         .failure()
         .stderr(predicates::str::contains("Error:"));
 }
+
+#[test]
+fn markdown_batch_writes_one_md_per_pdf() {
+    let src = tempdir().unwrap();
+    std::fs::copy(fixture("text.pdf"), src.path().join("a.pdf")).unwrap();
+    std::fs::copy(fixture("text.pdf"), src.path().join("b.pdf")).unwrap();
+    let out = tempdir().unwrap();
+
+    Command::cargo_bin("ezpdf")
+        .unwrap()
+        .args([
+            "markdown",
+            "--batch",
+            src.path().to_str().unwrap(),
+            "-o",
+            out.path().to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
+    // Output is named <stem>.md, not <stem>.pdf
+    assert!(out.path().join("a.md").exists());
+    assert!(out.path().join("b.md").exists());
+    assert!(!out.path().join("a.pdf").exists());
+    assert!(std::fs::read_to_string(out.path().join("a.md"))
+        .unwrap()
+        .contains("Quarterly Report"));
+}

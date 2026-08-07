@@ -2,6 +2,7 @@ pub mod bookmarks;
 pub mod completions;
 pub mod images;
 pub mod info;
+pub mod markdown;
 pub mod merge;
 pub mod meta;
 pub mod optimize;

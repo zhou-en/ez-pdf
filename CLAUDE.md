@@ -36,8 +36,14 @@ Building anything in the workspace on Linux requires the Tauri GTK stack, becaus
 
 ```bash
 sudo apt-get install -y libglib2.0-dev libgtk-3-dev libwebkit2gtk-4.1-dev \
-  libappindicator3-dev librsvg2-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev patchelf
+  libayatana-appindicator3-dev librsvg2-dev libsoup-3.0-dev \
+  libjavascriptcoregtk-4.1-dev libxdo-dev patchelf
 ```
+
+Use `libayatana-appindicator3-dev`, not `libappindicator3-dev`: modern Ubuntu ships
+`libayatana-appindicator3-1`, and the legacy package `Conflicts:` with it, so apt refuses
+the install. The CI workflows still pin the legacy name and only work because they run on
+`ubuntu-22.04` / `ubuntu-latest` images without the ayatana runtime preinstalled.
 
 To skip that, scope commands with `-p ezpdf-core -p ezpdf-cli`.
 
@@ -45,13 +51,14 @@ To skip that, scope commands with `-p ezpdf-core -p ezpdf-cli`.
 
 Cargo workspace, three crates. **All PDF logic lives in `ezpdf-core`; `ezpdf-cli` and `ezpdf-app` are thin shells that parse input and call it.** New functionality goes in core first, then gets exposed by each shell.
 
-- **`ezpdf-core`** — library over the `lopdf` object model. One module per operation (`merge`, `split`, `remove`, `rotate`, `reorder`, `metadata`, `watermark`, `bookmarks`, `images`, `info`, `optimize`), plus `page_range` (the `1-5,7,9-` parser), `batch` (directory globbing), and `error`. Public API is re-exported flat from `lib.rs`.
+- **`ezpdf-core`** — library over the `lopdf` object model. One module per operation (`merge`, `split`, `remove`, `rotate`, `reorder`, `metadata`, `watermark`, `bookmarks`, `images`, `info`, `optimize`, `markdown`), plus `page_range` (the `1-5,7,9-` parser), `batch` (directory globbing), and `error`. Public API is re-exported flat from `lib.rs`.
 - **`ezpdf-cli`** — clap binary named `ezpdf`. `main.rs` maps each subcommand to `commands/<name>.rs`, which each expose `Args` + `run(args) -> anyhow::Result<()>`. Shared helpers live in `output.rs`.
 - **`ezpdf-app`** — Tauri v2 shell. `src/commands.rs` holds `#[tauri::command]` wrappers (one per core op, `String` in / `String` out, errors flattened with `.map_err(|e| e.to_string())`); `src/lib.rs` registers them in `invoke_handler!`. Frontend is Svelte 5 + Vite in `frontend/`, tested with Vitest + `@testing-library/svelte`.
 
 ### Core invariants
 
-- **Lossless is the product.** Operations manipulate the PDF object graph only — copy page object refs, edit page dictionaries, rewrite the `/Kids` array. Never decode or re-encode content streams or images. Any change that would re-render a page is wrong.
+- **Lossless is the product.** *Editing* operations manipulate the PDF object graph only — copy page object refs, edit page dictionaries, rewrite the `/Kids` array. Never decode or re-encode content streams or images on a path that writes a PDF. Any change that would re-render a page is wrong.
+  - This governs mutation, not reads. `images` (decompresses image XObjects to PNG) and `markdown` (extracts the text layer) are read-only extractors: they emit a non-PDF artifact and never touch the source, so the rule does not constrain them.
 - **All fallible core paths return `EzPdfError`** (`error.rs`). No `unwrap()` / `expect()` / panics in library code; CLI code converts to `anyhow` at the boundary. Error messages are user-facing and carry a remedy (e.g. `EncryptedPdf` names the `qpdf --decrypt` fix).
 - **Pages are 1-indexed everywhere**, including error messages; `0` is a syntax error.
 
@@ -60,6 +67,7 @@ Cargo workspace, three crates. **All PDF logic lives in `ezpdf-core`; `ezpdf-cli
 - `merge::load_doc(path)` / `load_doc_with_password(path, pw)` — the only way documents are opened. Maps `lopdf` errors into `EzPdfError`, and turns encryption into `EncryptedPdf` / `WrongPassword`.
 - `remove::build_kept(doc, &[page_nums])` — builds a new document containing only the given pages, in the given order. `split_range`, `split_each`, and `remove` are all thin wrappers over it.
 - `page_range::parse(input, page_count)` — every page-selecting flag goes through this; it owns range validation and out-of-range errors.
+- `markdown::to_markdown(input, &MarkdownOptions)` — the only place `pdf-inspector` is referenced. The dep is pinned `=0.1.7` because it is 0.1.x; keeping the surface in one module makes swapping engines a one-file change. It talks to the crate through bytes, not `lopdf::Document`: `pdf-inspector` links its own `lopdf 0.41` alongside the workspace's `0.31`, so the two `Document` types are incompatible.
 - CLI: `output::resolve_password`, `resolve_input` (decrypts to a `NamedTempFile` the caller must keep alive), `run_batch_independent`, `maybe_progress` (progress bar only above 20 pages), `print_success`.
 
 ### Batch is a flag, not a subcommand

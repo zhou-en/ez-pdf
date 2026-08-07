@@ -20,6 +20,7 @@ vi.mock('./lib/tauri', () => ({
   cmdSetMetadata: vi.fn(),
   cmdAddBookmark: vi.fn(),
   cmdExtractImages: vi.fn(),
+  cmdMarkdown: vi.fn().mockResolvedValue('Converted to Markdown \u2192 /home/user/doc.md'),
 }));
 
 vi.mock('./lib/dnd', () => ({
@@ -430,5 +431,52 @@ describe('App', () => {
     await setupGridOp('split');
     await fireEvent.click(screen.getByRole('button', { name: /run split/i }));
     expect(await screen.findByText(/select at least one page/i)).toBeInTheDocument();
+  });
+});
+
+describe('markdown op', () => {
+  const mockOnFileDrop = vi.mocked(onFileDrop);
+
+  async function setupMarkdown() {
+    let dropHandler: ((paths: string[]) => void) | undefined;
+    mockOnFileDrop.mockImplementation(async (handler) => {
+      dropHandler = handler;
+      return vi.fn();
+    });
+    render(App);
+    await vi.waitFor(() => expect(dropHandler).toBeDefined());
+    await fireEvent.click(screen.getByRole('button', { name: /^markdown$/i }));
+    dropHandler!(['/home/user/doc.pdf']);
+    await vi.waitFor(() =>
+      expect(screen.getByRole('button', { name: /^run markdown$/i })).not.toBeDisabled(),
+    );
+  }
+
+  it('run calls cmdMarkdown with a .md output derived from the input name', async () => {
+    const { cmdMarkdown } = await import('./lib/tauri');
+    await setupMarkdown();
+    await fireEvent.click(screen.getByRole('button', { name: /^run markdown$/i }));
+    // doc.pdf -> doc.md: no `-markdown` suffix, and never a .pdf extension.
+    await vi.waitFor(() =>
+      expect(vi.mocked(cmdMarkdown)).toHaveBeenCalledWith(
+        '/home/user/doc.pdf',
+        '/home/user/doc.md',
+        true,
+      ),
+    );
+  });
+
+  it('unchecking page breaks passes false through to cmdMarkdown', async () => {
+    const { cmdMarkdown } = await import('./lib/tauri');
+    await setupMarkdown();
+    await fireEvent.click(screen.getByLabelText(/insert page break separators/i));
+    await fireEvent.click(screen.getByRole('button', { name: /^run markdown$/i }));
+    await vi.waitFor(() =>
+      expect(vi.mocked(cmdMarkdown)).toHaveBeenCalledWith(
+        '/home/user/doc.pdf',
+        expect.any(String),
+        false,
+      ),
+    );
   });
 });

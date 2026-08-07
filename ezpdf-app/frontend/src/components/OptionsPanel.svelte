@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { PdfMetadata, Bookmark } from '../lib/tauri';
 
-  type Op = 'merge' | 'split' | 'remove' | 'rotate' | 'reorder' | 'metadata' | 'watermark' | 'bookmarks' | 'extract';
+  type Op = 'merge' | 'split' | 'remove' | 'rotate' | 'reorder' | 'metadata' | 'watermark' | 'bookmarks' | 'extract' | 'markdown';
   type SplitOutputMode = 'combined' | 'individual';
 
   let {
@@ -20,6 +20,7 @@
     bookmarksList = $bindable<Bookmark[]>([]),
     bookmarkTitle = $bindable(''),
     bookmarkPage = $bindable(1),
+    markdownPageBreaks = $bindable(true),
   }: {
     op: Op;
     splitOutputMode?: SplitOutputMode;
@@ -36,10 +37,22 @@
     bookmarksList?: Bookmark[];
     bookmarkTitle?: string;
     bookmarkPage?: number;
+    markdownPageBreaks?: boolean;
   } = $props();
 </script>
 
-{#if op === 'merge'}
+{#if op === 'markdown'}
+  <div class="options">
+    <label>
+      <input
+        type="checkbox"
+        bind:checked={markdownPageBreaks}
+        aria-label="Insert page break separators"
+      />
+      Insert page break separators
+    </label>
+  </div>
+{:else if op === 'merge'}
   <!-- no op-specific inputs for merge -->
 {:else if op === 'reorder'}
   <!-- grid drives reorder — no inputs needed -->

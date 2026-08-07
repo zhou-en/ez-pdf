@@ -16,6 +16,12 @@ pub enum EzPdfError {
     #[error("wrong PDF password; check the password and try again")]
     WrongPassword,
 
+    #[error(
+        "no extractable text layer on page(s) {pages:?}; this looks like a scanned PDF. \
+         Run it through an OCR tool first with: ocrmypdf input.pdf output.pdf"
+    )]
+    NoTextLayer { pages: Vec<u32> },
+
     #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
 

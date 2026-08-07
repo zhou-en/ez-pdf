@@ -19,6 +19,7 @@ pub fn run() {
             commands::cmd_add_bookmark,
             commands::cmd_extract_images,
             commands::cmd_info,
+            commands::cmd_markdown,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -213,5 +214,53 @@ mod tests {
             assert!(*w > 0.0, "width must be positive");
             assert!(*h > 0.0, "height must be positive");
         }
+    }
+
+    // ── Markdown export tests ─────────────────────────────────────────────────
+
+    #[test]
+    fn cmd_markdown_writes_markdown_file() {
+        let tmp = TempDir::new().unwrap();
+        let out = tmp.path().join("out.md");
+        let result = cmd_markdown(
+            fixture("text.pdf"),
+            out.to_string_lossy().into_owned(),
+            true,
+        );
+        assert!(result.is_ok(), "expected Ok, got: {:?}", result);
+
+        let content = std::fs::read_to_string(&out).unwrap();
+        assert!(content.contains("Quarterly Report"), "got:\n{content}");
+    }
+
+    #[test]
+    fn cmd_markdown_page_breaks_false_omits_separators() {
+        let tmp = TempDir::new().unwrap();
+        let out = tmp.path().join("out.md");
+        cmd_markdown(
+            fixture("text.pdf"),
+            out.to_string_lossy().into_owned(),
+            false,
+        )
+        .unwrap();
+
+        let content = std::fs::read_to_string(&out).unwrap();
+        assert!(
+            !content.lines().any(|l| l.trim() == "---"),
+            "got:\n{content}"
+        );
+    }
+
+    #[test]
+    fn cmd_markdown_scanned_pdf_returns_err() {
+        let tmp = TempDir::new().unwrap();
+        let out = tmp.path().join("out.md");
+        let result = cmd_markdown(
+            fixture("5page.pdf"),
+            out.to_string_lossy().into_owned(),
+            true,
+        );
+        assert!(result.is_err(), "expected Err for a PDF with no text layer");
+        assert!(result.unwrap_err().contains("ocrmypdf"));
     }
 }

@@ -101,3 +101,11 @@ export interface PdfInfo {
 export async function cmdInfo(input: string): Promise<PdfInfo> {
   return invoke<PdfInfo>('cmd_info', { input });
 }
+
+export async function cmdMarkdown(
+  input: string,
+  output: string,
+  pageBreaks: boolean,
+): Promise<string> {
+  return invoke<string>('cmd_markdown', { input, output, pageBreaks });
+}
