@@ -45,3 +45,42 @@ jobs:
 
       - name: cargo fmt check
         run: cargo fmt --check
+
+  frontend:
+    name: Frontend (ezpdf-web)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ezpdf-web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Must precede setup-node: the pnpm cache resolves the store path by
+      # invoking pnpm, so it has to already be on PATH. Version comes from the
+      # `packageManager` field in ezpdf-web/package.json.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: ezpdf-web/pnpm-lock.yaml
+
+      - name: pnpm install
+        run: pnpm install --frozen-lockfile
+
+      - name: vitest
+        run: pnpm test
+
+      # AUTH_SECRET is only needed so Auth.js does not throw while pages are
+      # pre-rendered. It is a build-time constant and never leaves CI.
+      - name: next build
+        run: pnpm build
+        env:
+          AUTH_SECRET: ci-build-only-not-a-real-secret
+
+      # `next build` already type-checks application code. This additionally
+      # covers the test files, which the build excludes.
+      - name: tsc --noEmit
+        run: pnpm typecheck
