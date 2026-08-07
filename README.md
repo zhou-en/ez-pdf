@@ -23,18 +23,25 @@ Merge, split, rotate, watermark, edit metadata, and more without ever re-encodin
 | `bookmarks`  | List or add bookmarks (PDF outline entries)          |
 | `images`     | Extract embedded images to a folder                  |
 | `markdown`   | Convert a PDF to a Markdown file                     |
-| `batch`      | Run any operation across multiple files in parallel  |
+| `optimize`   | Remove unreferenced objects to reduce file size      |
+| `completions`| Generate shell completion scripts                    |
+
+There is no `batch` subcommand. Batching is a `--batch` flag, supported by
+`merge`, `split`, `remove`, `rotate`, `reorder` and `markdown`. It reinterprets
+the input argument as a directory: `merge --batch` folds the directory into a
+single file, the others map over each file independently into an output directory.
 
 ### Desktop app (`ezpdf-app`)
 
-All CLI operations are available in a drag-and-drop GUI built with Tauri v2 + Svelte 5:
+A drag-and-drop GUI built with Tauri v2 + Svelte 5, covering every CLI operation
+except `optimize` and `completions`:
 
 - Drop PDFs onto the window; drag to reorder the merge list
-- Switch operations from the sidebar (Merge, Split, Remove, Rotate, Reorder, Metadata, Watermark, Bookmarks, Extract)
+- Switch operations from the sidebar (Merge, Split, Remove, Rotate, Reorder, Metadata, Watermark, Bookmarks, Extract, Markdown)
 - "Save As…" picker for every output path
 - Dark mode (follows system preference)
 - Progress bar while running
-- Ships as `.dmg` (macOS) and `.deb` / `.AppImage` (Linux)
+- Ships as `.dmg` (macOS) and `.deb` / `.rpm` / `.AppImage` (Linux)
 
 ---
 
@@ -43,21 +50,42 @@ All CLI operations are available in a drag-and-drop GUI built with Tauri v2 + Sv
 ### CLI
 
 ```bash
-# Homebrew (macOS / Linux)
+# Homebrew — macOS only; the formula has no Linux bottle
 brew install zhou-en/tap/ezpdf
-
-# Cargo
-cargo install ezpdf
 ```
+
+On Linux, take the tarball for your architecture from
+[GitHub Releases](https://github.com/zhou-en/ez-pdf/releases):
+
+```bash
+curl -sSL https://github.com/zhou-en/ez-pdf/releases/download/v0.2.0/ezpdf-v0.2.0-x86_64-unknown-linux-gnu.tar.gz | tar xz
+install -m755 ezpdf ~/.local/bin/ezpdf
+```
+
+Or build from source, which is currently the only way to get commands added
+since the last release (`markdown` among them):
+
+```bash
+cargo install --path ezpdf-cli
+```
+
+`ezpdf` is not published on crates.io, so `cargo install ezpdf` will not work.
 
 ### Desktop app
 
-Download the latest release from [GitHub Releases](https://github.com/zhou-en/ez-pdf/releases):
+CI builds `.dmg` (macOS) and `.deb` / `.rpm` / `.AppImage` (Linux) on tag push
+and attaches them to the release.
 
-| Platform | Format |
-|----------|--------|
-| macOS    | `.dmg` |
-| Linux    | `.deb` or `.AppImage` |
+Releases up to and including `v0.2.0` carry CLI tarballs only — the bundles were
+built but never uploaded. Until the next tag, build the desktop app from source:
+
+```bash
+cd ezpdf-app/frontend && pnpm install
+cd .. && ./frontend/node_modules/.bin/tauri build
+```
+
+Artifacts land in `target/release/bundle/`. See [Development](#development) for
+the Linux system dependencies this needs.
 
 ---
 
@@ -103,8 +131,11 @@ ezpdf bookmarks add report.pdf "Chapter 1" --page 1 -o out.pdf
 # Extract images
 ezpdf images report.pdf -o ./images/
 
-# Batch merge across a folder
-ezpdf batch merge ./invoices/ -o combined.pdf
+# Batch — fold every PDF in a folder into one file
+ezpdf merge ./invoices/ --batch -o combined.pdf
+
+# Batch — map an operation over each file into an output directory
+ezpdf rotate ./scans/ 90 --batch -o ./rotated/
 
 # Shell completions
 ezpdf completions zsh >> ~/.zshrc
@@ -118,7 +149,7 @@ Page ranges use `1-5,7,9-12` syntax consistently across all commands. Pages are 
 
 ### Workspace Structure
 
-`ezpdf` is a Cargo workspace with a shared core library. All PDF logic lives in `ezpdf-core` — the CLI and the future desktop app are thin shells over it.
+`ezpdf` is a Cargo workspace with a shared core library. All PDF logic lives in `ezpdf-core` — the CLI and the desktop app are thin shells over it.
 
 ```mermaid
 %% Architecture: Cargo workspace crate relationships
@@ -269,6 +300,21 @@ cargo build --workspace
 cargo test --workspace
 cargo clippy --workspace -- -D warnings
 ```
+
+Building anything in the workspace on Linux needs the Tauri GTK stack, because
+`ezpdf-app` is a workspace member and `--workspace` compiles it:
+
+```bash
+sudo apt-get install -y libglib2.0-dev libgtk-3-dev libwebkit2gtk-4.1-dev \
+  libayatana-appindicator3-dev librsvg2-dev libsoup-3.0-dev \
+  libjavascriptcoregtk-4.1-dev libxdo-dev patchelf
+```
+
+Use `libayatana-appindicator3-dev`, not `libappindicator3-dev`: modern Ubuntu
+ships `libayatana-appindicator3-1`, and the legacy package `Conflicts:` with it,
+so apt refuses the install.
+
+To skip the GTK stack entirely, scope commands with `-p ezpdf-core -p ezpdf-cli`.
 
 ---
 
