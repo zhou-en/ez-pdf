@@ -3,13 +3,25 @@ use std::path::Path;
 use lopdf::{Dictionary, Document, Object};
 
 use crate::error::EzPdfError;
-use crate::merge::load_doc;
+use crate::merge::{load_doc, load_doc_mem, save_to_vec};
 use crate::page_range;
 
 pub fn remove(input: &Path, pages: &str, output: &Path) -> Result<(), EzPdfError> {
-    let doc = load_doc(input)?;
-    let page_count = doc.get_pages().len() as u32;
+    let mut result = build_removed(load_doc(input)?, pages)?;
+    let mut file = std::fs::File::create(output).map_err(EzPdfError::Io)?;
+    result
+        .save_to(&mut file)
+        .map_err(|e| EzPdfError::Pdf(e.to_string()))
+}
 
+/// [`remove`] over an in-memory PDF.
+pub fn remove_bytes(input: &[u8], pages: &str) -> Result<Vec<u8>, EzPdfError> {
+    save_to_vec(build_removed(load_doc_mem(input, None)?, pages)?)
+}
+
+/// Drops `pages` from `doc`, refusing to leave it empty.
+fn build_removed(doc: Document, pages: &str) -> Result<Document, EzPdfError> {
+    let page_count = doc.get_pages().len() as u32;
     let pages_to_remove = page_range::parse(pages, page_count)?;
 
     let keep: Vec<u32> = (1..=page_count)
@@ -23,11 +35,7 @@ pub fn remove(input: &Path, pages: &str, output: &Path) -> Result<(), EzPdfError
         });
     }
 
-    let mut result = build_kept(doc, &keep)?;
-    let mut file = std::fs::File::create(output).map_err(EzPdfError::Io)?;
-    result
-        .save_to(&mut file)
-        .map_err(|e| EzPdfError::Pdf(e.to_string()))
+    build_kept(doc, &keep)
 }
 
 pub(crate) fn build_kept(mut doc: Document, keep: &[u32]) -> Result<Document, EzPdfError> {

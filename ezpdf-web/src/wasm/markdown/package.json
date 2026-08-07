@@ -1,0 +1,17 @@
+{
+  "name": "ezpdf-wasm",
+  "type": "module",
+  "description": "WebAssembly bindings for ezpdf-core",
+  "version": "0.1.0",
+  "license": "MIT",
+  "files": [
+    "ezpdf_markdown_bg.wasm",
+    "ezpdf_markdown.js",
+    "ezpdf_markdown.d.ts"
+  ],
+  "main": "ezpdf_markdown.js",
+  "types": "ezpdf_markdown.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

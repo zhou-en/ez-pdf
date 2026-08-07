@@ -4,10 +4,13 @@ members = [
     "ezpdf-core",
     "ezpdf-cli",
     "ezpdf-app",
+    "ezpdf-wasm",
 ]
 
 [workspace.dependencies]
-lopdf = "0.31"
+# default-features off drops rayon + chrono + iana-time-zone, none of which
+# this crate uses and all of which block wasm32-unknown-unknown.
+lopdf = { version = "0.31", default-features = false, features = ["nom_parser"] }
 # Pinned exactly: 0.1.x, so a patch bump can still change markdown output.
 # The whole surface is confined to ezpdf-core/src/markdown.rs.
 pdf-inspector = "=0.1.7"

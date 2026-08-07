@@ -27,13 +27,19 @@ impl Default for MarkdownOptions {
 /// This is a read-only extractor: it never writes a PDF, so the lossless
 /// guarantee that governs the editing operations does not apply here.
 pub fn to_markdown(input: &Path, options: &MarkdownOptions) -> Result<String, EzPdfError> {
-    let bytes = std::fs::read(input)?;
+    to_markdown_bytes(&std::fs::read(input)?, options)
+}
 
+/// Converts an in-memory PDF to Markdown.
+///
+/// This is the filesystem-free entry point; [`to_markdown`] is a thin wrapper
+/// that reads the file first. WebAssembly targets use this directly.
+pub fn to_markdown_bytes(bytes: &[u8], options: &MarkdownOptions) -> Result<String, EzPdfError> {
     // page_range::parse owns range validation and the out-of-range error, and
     // needs the true page count to validate against.
     let selected = match &options.pages {
         Some(spec) => {
-            let total = crate::info::page_count(input)?;
+            let total = crate::info::page_count_bytes(bytes)?;
             Some(crate::page_range::parse(spec, total)?)
         }
         None => None,
@@ -49,15 +55,15 @@ pub fn to_markdown(input: &Path, options: &MarkdownOptions) -> Result<String, Ez
         inspector_options = inspector_options.pages(pages.iter().copied());
     }
 
-    let result = pdf_inspector::process_pdf_mem_with_options(&bytes, inspector_options)
-        .map_err(map_error)?;
+    let result =
+        pdf_inspector::process_pdf_mem_with_options(bytes, inspector_options).map_err(map_error)?;
 
     let needs_ocr: Vec<u32> = match &selected {
         // A filtered run reports pages it never extracted as needing OCR, so
         // take the signal from an unfiltered detection pass and keep only the
         // pages the caller actually asked for.
         Some(pages) => {
-            let detected = pdf_inspector::detect_pdf_mem(&bytes).map_err(map_error)?;
+            let detected = pdf_inspector::detect_pdf_mem(bytes).map_err(map_error)?;
             detected
                 .pages_needing_ocr
                 .into_iter()

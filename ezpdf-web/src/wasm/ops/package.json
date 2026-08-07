@@ -1,0 +1,17 @@
+{
+  "name": "ezpdf-wasm",
+  "type": "module",
+  "description": "WebAssembly bindings for ezpdf-core",
+  "version": "0.1.0",
+  "license": "MIT",
+  "files": [
+    "ezpdf_ops_bg.wasm",
+    "ezpdf_ops.js",
+    "ezpdf_ops.d.ts"
+  ],
+  "main": "ezpdf_ops.js",
+  "types": "ezpdf_ops.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
