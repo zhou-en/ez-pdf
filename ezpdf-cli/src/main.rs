@@ -6,6 +6,7 @@ use commands::bookmarks::BookmarksArgs;
 use commands::completions::CompletionsArgs;
 use commands::images::ImagesArgs;
 use commands::info::InfoArgs;
+use commands::markdown::MarkdownArgs;
 use commands::merge::MergeArgs;
 use commands::meta::MetaArgs;
 use commands::optimize::OptimizeArgs;
@@ -20,7 +21,7 @@ use commands::watermark::WatermarkArgs;
     name = "ezpdf",
     version,
     about = "Fast lossless PDF manipulation",
-    long_about = "ezpdf — fast, lossless PDF manipulation from the command line.\n\nExamples:\n  ezpdf merge a.pdf b.pdf -o combined.pdf\n  ezpdf remove input.pdf 3,5 -o output.pdf\n  ezpdf rotate input.pdf 90 -o rotated.pdf\n  ezpdf split input.pdf 1-5 -o part.pdf\n  ezpdf reorder input.pdf 3,1,2 -o reordered.pdf"
+    long_about = "ezpdf — fast, lossless PDF manipulation from the command line.\n\nExamples:\n  ezpdf merge a.pdf b.pdf -o combined.pdf\n  ezpdf remove input.pdf 3,5 -o output.pdf\n  ezpdf rotate input.pdf 90 -o rotated.pdf\n  ezpdf split input.pdf 1-5 -o part.pdf\n  ezpdf reorder input.pdf 3,1,2 -o reordered.pdf\n  ezpdf markdown input.pdf -o input.md"
 )]
 pub struct Cli {
     #[command(subcommand)]
@@ -41,6 +42,8 @@ enum Commands {
     Info(InfoArgs),
     /// Read or write PDF metadata fields
     Meta(MetaArgs),
+    /// Convert a PDF to a Markdown file
+    Markdown(MarkdownArgs),
     /// Merge two or more PDFs into one
     Merge(MergeArgs),
     /// Remove specific pages from a PDF
@@ -65,6 +68,7 @@ fn main() {
         Commands::Optimize(args) => commands::optimize::run(args),
         Commands::Info(args) => commands::info::run(args),
         Commands::Meta(args) => commands::meta::run(args),
+        Commands::Markdown(args) => commands::markdown::run(args),
         Commands::Merge(args) => commands::merge::run(args),
         Commands::Remove(args) => commands::remove::run(args),
         Commands::Reorder(args) => commands::reorder::run(args),

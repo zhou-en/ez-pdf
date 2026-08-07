@@ -32,7 +32,7 @@ pub fn info(input: &Path) -> Result<PdfInfo, EzPdfError> {
     let mut pages: Vec<(u32, lopdf::ObjectId)> = doc.get_pages().into_iter().collect();
     pages.sort_by_key(|(n, _)| *n);
 
-    let mut dimensions = Vec::with_capacity(pages.len() as usize);
+    let mut dimensions = Vec::with_capacity(pages.len());
     for (_, page_id) in &pages {
         let (w, h) = page_dimensions(&doc, *page_id);
         dimensions.push((w, h));

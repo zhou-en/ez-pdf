@@ -30,4 +30,9 @@ describe('Sidebar', () => {
     const splitBtn = screen.getByRole('button', { name: /split/i });
     expect(splitBtn).not.toHaveClass('active');
   });
+
+  it('renders a Markdown button', () => {
+    render(Sidebar, { selectedOp: 'merge' });
+    expect(screen.getByRole('button', { name: /^markdown$/i })).toBeInTheDocument();
+  });
 });

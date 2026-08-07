@@ -1,12 +1,12 @@
 <script lang="ts">
-  type Op = 'merge' | 'split' | 'remove' | 'rotate' | 'reorder' | 'metadata' | 'watermark' | 'bookmarks' | 'extract';
+  type Op = 'merge' | 'split' | 'remove' | 'rotate' | 'reorder' | 'metadata' | 'watermark' | 'bookmarks' | 'extract' | 'markdown';
 
   let {
     selectedOp = 'merge',
     onopSelected,
   }: { selectedOp?: Op; onopSelected?: (op: Op) => void } = $props();
 
-  const ops: Op[] = ['merge', 'split', 'remove', 'rotate', 'reorder', 'metadata', 'watermark', 'bookmarks', 'extract'];
+  const ops: Op[] = ['merge', 'split', 'remove', 'rotate', 'reorder', 'metadata', 'watermark', 'bookmarks', 'extract', 'markdown'];
 
   function select(op: Op) {
     onopSelected?.(op);

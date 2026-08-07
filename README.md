@@ -22,6 +22,7 @@ Merge, split, rotate, watermark, edit metadata, and more without ever re-encodin
 | `watermark`  | Stamp diagonal text on all or specific pages         |
 | `bookmarks`  | List or add bookmarks (PDF outline entries)          |
 | `images`     | Extract embedded images to a folder                  |
+| `markdown`   | Convert a PDF to a Markdown file                     |
 | `batch`      | Run any operation across multiple files in parallel  |
 
 ### Desktop app (`ezpdf-app`)
@@ -281,6 +282,7 @@ cargo clippy --workspace -- -D warnings
 | **v2.1** | UX polish — drag-to-reorder, Save As, dark mode, progress bar | ✅ shipped |
 | **v2.2** | metadata editor, watermark, bookmarks, image extraction in app UI | ✅ shipped |
 | **v2.3** | Linux packaging — `.deb` + `.AppImage` via CI | ✅ shipped |
+| **v2.4** | `ezpdf markdown` — PDF → Markdown export, CLI + app | ✅ shipped |
 
 ---
 

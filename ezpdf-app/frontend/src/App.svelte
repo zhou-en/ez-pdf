@@ -8,12 +8,12 @@
   import {
     cmdMerge, cmdSplitRange, cmdRemove, cmdRotate, cmdReorder, cmdPageCount,
     cmdGetMetadata, cmdSetMetadata, cmdWatermark, cmdListBookmarks, cmdAddBookmark, cmdExtractImages,
-    cmdInfo,
+    cmdInfo, cmdMarkdown,
   } from './lib/tauri';
   import type { PdfMetadata, Bookmark } from './lib/tauri';
   import { saveOutputPath, pickOutputDir } from './lib/dialog';
 
-  type Op = 'merge' | 'split' | 'remove' | 'rotate' | 'reorder' | 'metadata' | 'watermark' | 'bookmarks' | 'extract';
+  type Op = 'merge' | 'split' | 'remove' | 'rotate' | 'reorder' | 'metadata' | 'watermark' | 'bookmarks' | 'extract' | 'markdown';
   type Status = { type: 'idle' | 'success' | 'error'; message: string };
 
   interface PageTile {
@@ -25,12 +25,12 @@
 
   const gridOps: Op[] = ['reorder', 'remove', 'rotate', 'split'];
 
-  const ops: Op[] = ['merge', 'split', 'remove', 'rotate', 'reorder', 'metadata', 'watermark', 'bookmarks', 'extract'];
+  const ops: Op[] = ['merge', 'split', 'remove', 'rotate', 'reorder', 'metadata', 'watermark', 'bookmarks', 'extract', 'markdown'];
 
   // Per-operation file lists
   let filesByOp: Record<Op, string[]> = $state({
     merge: [], split: [], remove: [], rotate: [], reorder: [],
-    metadata: [], watermark: [], bookmarks: [], extract: [],
+    metadata: [], watermark: [], bookmarks: [], extract: [], markdown: [],
   });
 
   let selectedOp: Op = $state('merge');
@@ -40,12 +40,13 @@
   // Per-operation output path overrides
   let outputOverride: Record<Op, string> = $state({
     merge: '', split: '', remove: '', rotate: '', reorder: '',
-    metadata: '', watermark: '', bookmarks: '', extract: '',
+    metadata: '', watermark: '', bookmarks: '', extract: '', markdown: '',
   });
 
   // Grid page tile state (shared across reorder/remove/rotate/split)
   let pageTiles: PageTile[] = $state([]);
   let splitOutputMode: 'combined' | 'individual' = $state('combined');
+  let markdownPageBreaks = $state(true);
 
   // Options state
   let rotateDegrees = $state(90);
@@ -144,6 +145,7 @@
     watermark: 'watermarked',
     bookmarks: 'bookmarked',
     extract: 'images',
+    markdown: 'markdown',
   };
 
   function defaultOutput(op: Op): string {
@@ -152,6 +154,9 @@
     const base = stem(files[0]);
     if (op === 'extract') {
       return `${dir}${base}-images`;
+    }
+    if (op === 'markdown') {
+      return `${dir}${base}.md`;
     }
     return `${dir}${base}-${opSuffix[op]}.pdf`;
   }
@@ -240,6 +245,8 @@
       } else if (selectedOp === 'bookmarks') {
         msg = await cmdAddBookmark(files[0], bookmarkTitle, bookmarkPage, out);
         bookmarksList = await cmdListBookmarks(out);
+      } else if (selectedOp === 'markdown') {
+        msg = await cmdMarkdown(files[0], out, markdownPageBreaks);
       } else {
         // extract
         msg = await cmdExtractImages(files[0], out);
@@ -302,6 +309,7 @@
       bind:bookmarksList
       bind:bookmarkTitle
       bind:bookmarkPage
+      bind:markdownPageBreaks
     />
 
     <button class="run-btn" onclick={run} disabled={files.length === 0 || running}>

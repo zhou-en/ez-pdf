@@ -23,6 +23,17 @@ pub fn cmd_split_each(input: String, output_dir: String) -> Result<String, Strin
 }
 
 #[tauri::command]
+pub fn cmd_markdown(input: String, output: String, page_breaks: bool) -> Result<String, String> {
+    let options = ezpdf_core::MarkdownOptions {
+        pages: None,
+        page_breaks,
+    };
+    ezpdf_core::markdown(Path::new(&input), &options, Path::new(&output))
+        .map_err(|e| e.to_string())?;
+    Ok(format!("Converted to Markdown → {}", output))
+}
+
+#[tauri::command]
 pub fn cmd_remove(input: String, pages: String, output: String) -> Result<String, String> {
     ezpdf_core::remove(Path::new(&input), &pages, Path::new(&output)).map_err(|e| e.to_string())?;
     Ok(format!("Removed pages {} → {}", pages, output))

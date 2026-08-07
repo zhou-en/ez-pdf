@@ -8,6 +8,9 @@ members = [
 
 [workspace.dependencies]
 lopdf = "0.31"
+# Pinned exactly: 0.1.x, so a patch bump can still change markdown output.
+# The whole surface is confined to ezpdf-core/src/markdown.rs.
+pdf-inspector = "=0.1.7"
 thiserror = "2"
 anyhow = "1"
 clap = { version = "4", features = ["derive", "env"] }
