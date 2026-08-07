@@ -45,3 +45,59 @@ jobs:
 
       - name: cargo fmt check
         run: cargo fmt --check
+
+  # The desktop app is otherwise only built by release.yml, on tag push. That
+  # left two failure modes invisible until release time: the npm/Rust Tauri
+  # versions drifting apart (Cargo.lock is gitignored, pnpm-lock.yaml is not),
+  # and anything that breaks the Svelte frontend build.
+  desktop:
+    name: Desktop (ezpdf-app)
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: desktop
+
+      - name: Install Linux system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libglib2.0-dev \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            libsoup-3.0-dev \
+            libjavascriptcoregtk-4.1-dev \
+            patchelf
+
+      # Must precede setup-node, as in the frontend job above. Pinned to 9
+      # because ezpdf-app/frontend/package.json has no `packageManager` field
+      # and its lockfile is lockfileVersion 9.0.
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: ezpdf-app/frontend/pnpm-lock.yaml
+
+      # --frozen-lockfile is load-bearing: it fails if pnpm-lock.yaml has
+      # drifted from package.json, which is the drift this job exists to catch.
+      - name: pnpm install
+        working-directory: ezpdf-app/frontend
+        run: pnpm install --frozen-lockfile
+
+      # --no-bundle still runs the npm/Rust version check and compiles both the
+      # Svelte frontend and the Rust binary. It skips only bundle generation,
+      # which downloads linuxdeploy and is release.yml's job anyway.
+      - name: tauri build
+        working-directory: ezpdf-app
+        run: ./frontend/node_modules/.bin/tauri build --no-bundle
