@@ -23,9 +23,22 @@ pub fn page_count(input: &Path) -> Result<u32, EzPdfError> {
     Ok(doc.get_pages().len() as u32)
 }
 
-pub fn info(input: &Path) -> Result<PdfInfo, EzPdfError> {
-    let doc = load_doc(input)?;
+/// [`page_count`] over an in-memory PDF.
+pub fn page_count_bytes(bytes: &[u8]) -> Result<u32, EzPdfError> {
+    let doc = crate::merge::load_doc_mem(bytes, None)?;
+    Ok(doc.get_pages().len() as u32)
+}
 
+pub fn info(input: &Path) -> Result<PdfInfo, EzPdfError> {
+    build_info(load_doc(input)?)
+}
+
+/// [`info`] over an in-memory PDF.
+pub fn info_bytes(bytes: &[u8]) -> Result<PdfInfo, EzPdfError> {
+    build_info(crate::merge::load_doc_mem(bytes, None)?)
+}
+
+fn build_info(doc: lopdf::Document) -> Result<PdfInfo, EzPdfError> {
     let page_count = doc.get_pages().len() as u32;
 
     // Collect dimensions in page-number order

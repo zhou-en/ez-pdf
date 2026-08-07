@@ -1,0 +1,12 @@
+node_modules/
+.next/
+.env.local
+.env*.local
+next-env.d.ts
+.playwright-mcp/
+*.tsbuildinfo
+
+# Machine-specific: pins the pnpm store to a roomier partition using absolute
+# paths under $HOME. Committing it would break `pnpm install` on Vercel and on
+# any other machine. The README carries the snippet for whoever needs it.
+.npmrc

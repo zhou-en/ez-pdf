@@ -1,13 +1,12 @@
 use std::path::Path;
 
 use lopdf::{Dictionary, Document, Object};
-use rayon::prelude::*;
 
 use crate::error::EzPdfError;
 
 pub fn merge(inputs: &[&Path], output: &Path) -> Result<(), EzPdfError> {
     let docs: Vec<Document> = inputs
-        .par_iter()
+        .iter()
         .map(|p| load_doc(p))
         .collect::<Result<_, _>>()?;
 
@@ -17,6 +16,31 @@ pub fn merge(inputs: &[&Path], output: &Path) -> Result<(), EzPdfError> {
     result
         .save_to(&mut file)
         .map_err(|e| EzPdfError::Pdf(e.to_string()))
+}
+
+/// [`merge`] over in-memory PDFs.
+pub fn merge_bytes(inputs: &[&[u8]]) -> Result<Vec<u8>, EzPdfError> {
+    if inputs.is_empty() {
+        return Err(EzPdfError::InvalidSyntax {
+            input: String::new(),
+            hint: "merge needs at least one input document".to_string(),
+        });
+    }
+
+    let docs: Vec<Document> = inputs
+        .iter()
+        .map(|bytes| load_doc_mem(bytes, None))
+        .collect::<Result<_, _>>()?;
+
+    save_to_vec(build_merged(docs)?)
+}
+
+/// Serializes a document to bytes — the counterpart to `File::create` + `save_to`.
+pub(crate) fn save_to_vec(mut doc: Document) -> Result<Vec<u8>, EzPdfError> {
+    let mut buf = Vec::new();
+    doc.save_to(&mut buf)
+        .map_err(|e| EzPdfError::Pdf(e.to_string()))?;
+    Ok(buf)
 }
 
 fn build_merged(mut docs: Vec<Document>) -> Result<Document, EzPdfError> {
@@ -89,6 +113,33 @@ fn build_merged(mut docs: Vec<Document>) -> Result<Document, EzPdfError> {
 
 pub(crate) fn load_doc(path: &Path) -> Result<Document, EzPdfError> {
     load_doc_with_password(path, None)
+}
+
+/// Opens a document from memory instead of a path.
+///
+/// The filesystem-free counterpart to [`load_doc`], and the chokepoint every
+/// `*_bytes` operation funnels through. Applies the same encryption mapping.
+pub fn load_doc_mem(bytes: &[u8], password: Option<&str>) -> Result<Document, EzPdfError> {
+    let mut doc = Document::load_mem(bytes).map_err(|e| match e {
+        lopdf::Error::Decryption(_) => EzPdfError::EncryptedPdf,
+        other => EzPdfError::Pdf(other.to_string()),
+    })?;
+
+    if doc.is_encrypted() {
+        let pw = match password {
+            Some(p) => p,
+            None => return Err(EzPdfError::EncryptedPdf),
+        };
+        doc.decrypt(pw).map_err(|e| {
+            if e.to_string().contains("incorrect") {
+                EzPdfError::WrongPassword
+            } else {
+                EzPdfError::Pdf(e.to_string())
+            }
+        })?;
+    }
+
+    Ok(doc)
 }
 
 pub fn load_doc_with_password(path: &Path, password: Option<&str>) -> Result<Document, EzPdfError> {

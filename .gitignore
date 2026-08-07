@@ -8,3 +8,8 @@ ralph-loop.log
 node_modules/
 dist/
 ezpdf-app/gen/
+
+# wasm-pack build output (Unit 2 decides what gets committed)
+ezpdf-wasm/pkg/
+ezpdf-wasm/pkg-*/
+# src/wasm is generated but committed: Vercel has no Rust toolchain.

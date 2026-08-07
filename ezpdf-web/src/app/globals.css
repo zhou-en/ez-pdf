@@ -1,0 +1,116 @@
+@import 'tailwindcss';
+
+/* Touch devices get 44px targets (Apple HIG); mouse/trackpad get the tighter
+   sizes the Raycast system specifies. */
+@custom-variant pointer-fine (@media (pointer: fine));
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Design tokens — Raycast
+   Source: ~/Projects/awesome-design-md/design-md/raycast/DESIGN.md
+   See DESIGN.md in this directory for the rules these encode.
+
+   The system is dark-only by design, so there is no light-mode block here.
+   Elevation comes from the surface ladder below, never from shadows.
+   ──────────────────────────────────────────────────────────────────────────── */
+@theme {
+  /* Surface ladder — each notch lighter reads as one step nearer the viewer */
+  --color-canvas: #07080a;
+  --color-surface: #0d0d0d;
+  --color-elevated: #101111;
+  --color-card: #121212;
+
+  /* Text */
+  --color-ink: #f4f4f6;
+  --color-body: #cdcdcd;
+  --color-mute: #9c9c9d;
+  --color-ash: #6a6b6c;
+
+  /* Hairlines — the only border vocabulary */
+  --color-hairline: #242728;
+  --color-hairline-soft: rgba(255, 255, 255, 0.08);
+  --color-hairline-strong: rgba(255, 255, 255, 0.16);
+
+  /* White IS the action colour. There is no tinted primary. */
+  --color-primary: #ffffff;
+  --color-primary-pressed: #e8e8e8;
+  --color-on-primary: #000000;
+
+  /* Saturated accents appear only in -soft chip form, never on chrome or text */
+  --color-accent-blue: #57c1ff;
+  --color-accent-blue-soft: rgba(87, 193, 255, 0.15);
+  --color-accent-green: #59d499;
+  --color-accent-green-soft: rgba(89, 212, 153, 0.15);
+  --color-accent-red: #ff6161;
+  --color-accent-red-soft: rgba(255, 97, 97, 0.15);
+  --color-accent-yellow: #ffc533;
+  --color-accent-yellow-soft: rgba(255, 197, 51, 0.15);
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  /* ss03 is part of the brand identity — the alternate `g`. */
+  font-feature-settings: 'calt', 'kern', 'liga', 'ss03';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* iOS zooms the viewport when a focused input is under 16px. */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+/* Comfortable hit areas for the small controls that are not buttons. */
+@media (pointer: coarse) {
+  input[type='checkbox'] {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+/* One focus treatment everywhere, keyboard-only. */
+:focus-visible {
+  outline: 2px solid var(--color-accent-blue);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* The hero stripe band. Used exactly once, on `/`. */
+.hero-stripes {
+  background-image:
+    linear-gradient(105deg, transparent 38%, rgba(255, 87, 87, 0.5) 38%, rgba(161, 19, 26, 0.36) 46%, transparent 46%),
+    linear-gradient(105deg, transparent 50%, rgba(255, 87, 87, 0.36) 50%, rgba(161, 19, 26, 0.26) 57%, transparent 57%),
+    linear-gradient(105deg, transparent 61%, rgba(255, 87, 87, 0.22) 61%, rgba(161, 19, 26, 0.16) 67%, transparent 67%);
+  filter: blur(46px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

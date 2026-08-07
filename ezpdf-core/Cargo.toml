@@ -8,14 +8,19 @@ repository = "https://github.com/zhou-en/ez-pdf"
 keywords = ["pdf", "merge", "split", "rotate", "cli"]
 categories = ["command-line-utilities", "multimedia"]
 
+[features]
+default = ["markdown"]
+# Gated so wasm builds can ship a small ops-only bundle without the
+# markdown engine (pdf-inspector embeds glyph tables + CMaps).
+markdown = ["dep:pdf-inspector"]
+
 [dependencies]
 lopdf = { workspace = true }
 thiserror = { workspace = true }
-rayon = { workspace = true }
 serde = { workspace = true }
 flate2 = { workspace = true }
 png = { workspace = true }
-pdf-inspector = { workspace = true }
+pdf-inspector = { workspace = true, optional = true }
 
 [dev-dependencies]
 criterion = { workspace = true }

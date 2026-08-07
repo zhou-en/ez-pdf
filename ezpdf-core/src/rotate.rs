@@ -3,7 +3,7 @@ use std::path::Path;
 use lopdf::Object;
 
 use crate::error::EzPdfError;
-use crate::merge::load_doc;
+use crate::merge::{load_doc, load_doc_mem, save_to_vec};
 use crate::page_range;
 
 pub fn rotate(
@@ -12,9 +12,35 @@ pub fn rotate(
     pages: Option<&str>,
     output: &Path,
 ) -> Result<(), EzPdfError> {
-    let normalized = normalize_degrees(degrees)?;
+    let mut doc = build_rotated(load_doc(input)?, degrees, pages)?;
+    let mut file = std::fs::File::create(output).map_err(EzPdfError::Io)?;
+    doc.save_to(&mut file)
+        .map_err(|e| EzPdfError::Pdf(e.to_string()))
+}
 
-    let mut doc = load_doc(input)?;
+/// [`rotate`] over an in-memory PDF.
+pub fn rotate_bytes(
+    input: &[u8],
+    degrees: i32,
+    pages: Option<&str>,
+) -> Result<Vec<u8>, EzPdfError> {
+    // normalize_degrees runs before the parse so an invalid angle is reported
+    // even when the document itself cannot be opened.
+    let normalized = normalize_degrees(degrees)?;
+    save_to_vec(build_rotated(
+        load_doc_mem(input, None)?,
+        normalized,
+        pages,
+    )?)
+}
+
+/// Applies a relative rotation to the selected pages.
+fn build_rotated(
+    mut doc: lopdf::Document,
+    degrees: i32,
+    pages: Option<&str>,
+) -> Result<lopdf::Document, EzPdfError> {
+    let normalized = normalize_degrees(degrees)?;
     let page_count = doc.get_pages().len() as u32;
 
     let target_pages: Vec<u32> = match pages {
@@ -41,9 +67,7 @@ pub fn rotate(
         }
     }
 
-    let mut file = std::fs::File::create(output).map_err(EzPdfError::Io)?;
-    doc.save_to(&mut file)
-        .map_err(|e| EzPdfError::Pdf(e.to_string()))
+    Ok(doc)
 }
 
 /// Normalize degrees to a multiple of 90 in [0, 360).

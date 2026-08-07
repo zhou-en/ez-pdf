@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use crate::error::EzPdfError;
-use crate::merge::load_doc;
+use crate::merge::{load_doc, load_doc_mem, save_to_vec};
 use crate::page_range;
 use crate::remove::build_kept;
 
@@ -42,6 +42,28 @@ pub fn split_each(input: &Path, output_dir: &Path) -> Result<(), EzPdfError> {
     }
 
     Ok(())
+}
+
+/// [`split_range`] over an in-memory PDF.
+pub fn split_range_bytes(input: &[u8], range: &str) -> Result<Vec<u8>, EzPdfError> {
+    let doc = load_doc_mem(input, None)?;
+    let page_count = doc.get_pages().len() as u32;
+    let pages = page_range::parse(range, page_count)?;
+
+    save_to_vec(build_kept(doc, &pages)?)
+}
+
+/// [`split_each`] over an in-memory PDF.
+///
+/// Returns one document per page in page order. The path variant writes these
+/// to numbered files; callers without a filesystem get the bytes instead.
+pub fn split_each_bytes(input: &[u8]) -> Result<Vec<Vec<u8>>, EzPdfError> {
+    let doc = load_doc_mem(input, None)?;
+    let page_count = doc.get_pages().len() as u32;
+
+    (1..=page_count)
+        .map(|page_num| save_to_vec(build_kept(doc.clone(), &[page_num])?))
+        .collect()
 }
 
 /// Returns the number of decimal digits needed to represent `n` (minimum 1).
