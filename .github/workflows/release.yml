@@ -120,12 +120,19 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ""
 
+      # Uploaded separately so each artifact is flat. A single step with both
+      # globs roots the artifact at their common ancestor (target/release/bundle),
+      # which reintroduces the deb/ and appimage/ subdirectories that the release
+      # job's artifacts/*.deb pattern cannot match.
       - uses: actions/upload-artifact@v4
         with:
-          name: ezpdf-desktop-linux
-          path: |
-            target/release/bundle/deb/*.deb
-            target/release/bundle/appimage/*.AppImage
+          name: ezpdf-desktop-linux-deb
+          path: target/release/bundle/deb/*.deb
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ezpdf-desktop-linux-appimage
+          path: target/release/bundle/appimage/*.AppImage
 
   build-desktop-macos:
     runs-on: macos-14
