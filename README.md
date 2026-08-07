@@ -58,12 +58,11 @@ On Linux, take the tarball for your architecture from
 [GitHub Releases](https://github.com/zhou-en/ez-pdf/releases):
 
 ```bash
-curl -sSL https://github.com/zhou-en/ez-pdf/releases/download/v0.2.0/ezpdf-v0.2.0-x86_64-unknown-linux-gnu.tar.gz | tar xz
+curl -sSL https://github.com/zhou-en/ez-pdf/releases/download/v0.3.0/ezpdf-v0.3.0-x86_64-unknown-linux-gnu.tar.gz | tar xz
 install -m755 ezpdf ~/.local/bin/ezpdf
 ```
 
-Or build from source, which is currently the only way to get commands added
-since the last release (`markdown` among them):
+Or build from source:
 
 ```bash
 cargo install --path ezpdf-cli
@@ -73,11 +72,12 @@ cargo install --path ezpdf-cli
 
 ### Desktop app
 
-CI builds `.dmg` (macOS) and `.deb` / `.rpm` / `.AppImage` (Linux) on tag push
-and attaches them to the release.
+Download `.dmg` (macOS) or `.deb` / `.rpm` / `.AppImage` (Linux) from
+[GitHub Releases](https://github.com/zhou-en/ez-pdf/releases). CI builds and
+attaches them on tag push.
 
-Releases up to and including `v0.2.0` carry CLI tarballs only — the bundles were
-built but never uploaded. Until the next tag, build the desktop app from source:
+Releases before `v0.3.0` carry CLI tarballs only — the bundles were built but
+never uploaded. To build the app yourself:
 
 ```bash
 cd ezpdf-app/frontend && pnpm install
