@@ -58,7 +58,7 @@ On Linux, take the tarball for your architecture from
 [GitHub Releases](https://github.com/zhou-en/ez-pdf/releases):
 
 ```bash
-curl -sSL https://github.com/zhou-en/ez-pdf/releases/download/v0.3.0/ezpdf-v0.3.0-x86_64-unknown-linux-gnu.tar.gz | tar xz
+curl -sSL https://github.com/zhou-en/ez-pdf/releases/download/v0.3.1/ezpdf-v0.3.1-x86_64-unknown-linux-gnu.tar.gz | tar xz
 install -m755 ezpdf ~/.local/bin/ezpdf
 ```
 
@@ -77,7 +77,11 @@ Download `.dmg` (macOS) or `.deb` / `.rpm` / `.AppImage` (Linux) from
 attaches them on tag push.
 
 Releases before `v0.3.0` carry CLI tarballs only — the bundles were built but
-never uploaded. `.rpm` is attached from the release after `v0.3.0`.
+never uploaded. `.rpm` is attached from `v0.3.1` onward.
+
+Bundles in `v0.3.0` are named `ezpdf_0.1.0_*` and its `ezpdf --version` reports
+`0.1.0`, because the crate versions were only aligned with the tag afterwards.
+From `v0.3.1` the numbers agree.
 
 #### macOS: the app is not signed
 
