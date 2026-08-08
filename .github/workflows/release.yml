@@ -137,6 +137,11 @@ jobs:
           name: ezpdf-desktop-linux-appimage
           path: target/release/bundle/appimage/*.AppImage
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ezpdf-desktop-linux-rpm
+          path: target/release/bundle/rpm/*.rpm
+
   build-desktop-macos:
     runs-on: macos-14
     steps:
@@ -167,6 +172,28 @@ jobs:
         working-directory: ezpdf-app/frontend
         run: pnpm install
 
+      # The .dmg produced here is unsigned and unnotarized, so Gatekeeper
+      # blocks it on download (see README, "macOS: the app is not signed").
+      # To sign, buy an Apple Developer account and add these repository
+      # secrets, then uncomment the block below:
+      #
+      #   APPLE_CERTIFICATE          base64 of the .p12 Developer ID cert
+      #   APPLE_CERTIFICATE_PASSWORD password used when exporting the .p12
+      #   APPLE_SIGNING_IDENTITY     e.g. "Developer ID Application: Name (TEAMID)"
+      #   APPLE_ID                   Apple account email, for notarytool
+      #   APPLE_PASSWORD             app-specific password, NOT the account one
+      #   APPLE_TEAM_ID              10-character team identifier
+      #
+      # Left commented rather than wired to empty secrets because an empty
+      # APPLE_SIGNING_IDENTITY may be read as "sign with nothing" rather than
+      # "skip signing", which would break a currently working release.
+      #
+      #   APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+      #   APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      #   APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+      #   APPLE_ID: ${{ secrets.APPLE_ID }}
+      #   APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+      #   APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       - name: Build desktop app
         working-directory: ezpdf-app
         run: ./frontend/node_modules/.bin/tauri build --target universal-apple-darwin
@@ -192,6 +219,7 @@ jobs:
           files: |
             artifacts/*.tar.gz
             artifacts/*.deb
+            artifacts/*.rpm
             artifacts/*.AppImage
             artifacts/*.dmg
           generate_release_notes: true

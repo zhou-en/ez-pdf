@@ -77,7 +77,24 @@ Download `.dmg` (macOS) or `.deb` / `.rpm` / `.AppImage` (Linux) from
 attaches them on tag push.
 
 Releases before `v0.3.0` carry CLI tarballs only — the bundles were built but
-never uploaded. To build the app yourself:
+never uploaded. `.rpm` is attached from the release after `v0.3.0`.
+
+#### macOS: the app is not signed
+
+The `.dmg` is unsigned and unnotarized, so Gatekeeper blocks it on first open —
+usually "ezpdf cannot be opened because the developer cannot be verified."
+This is expected, not a corrupt download. Either right-click the app and choose
+**Open** (which offers an override the plain double-click does not), or clear
+the quarantine flag:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/ezpdf.app
+```
+
+Signing requires a paid Apple Developer account. Until there is one, this step
+is unavoidable for anyone installing from a release.
+
+To build the app yourself:
 
 ```bash
 cd ezpdf-app/frontend && pnpm install

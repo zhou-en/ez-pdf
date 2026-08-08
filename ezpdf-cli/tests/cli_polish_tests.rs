@@ -8,7 +8,9 @@ fn version_exits_zero_and_contains_version_string() {
         .arg("--version")
         .assert()
         .success()
-        .stdout(predicates::str::contains("0.1.0"));
+        // Read from the manifest rather than hardcoded, so a version bump
+        // does not require editing this test.
+        .stdout(predicates::str::contains(env!("CARGO_PKG_VERSION")));
 }
 
 #[test]
