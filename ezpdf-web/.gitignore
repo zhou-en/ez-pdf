@@ -10,3 +10,5 @@ next-env.d.ts
 # paths under $HOME. Committing it would break `pnpm install` on Vercel and on
 # any other machine. The README carries the snippet for whoever needs it.
 .npmrc
+.vercel
+.env*
