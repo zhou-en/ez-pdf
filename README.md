@@ -337,8 +337,12 @@ To skip the GTK stack entirely, scope commands with `-p ezpdf-core -p ezpdf-cli`
 
 ## Roadmap
 
-| Version | Scope | Status |
-|---------|-------|--------|
+These are feature milestones, not release tags. The two numberings are
+independent: milestone v2.4 shipped in release `v0.3.0`. Check
+[Releases](https://github.com/zhou-en/ez-pdf/releases) for what to download.
+
+| Milestone | Scope | Status |
+|-----------|-------|--------|
 | **v1.0** | merge, split, remove, rotate, reorder — CLI + Homebrew | ✅ shipped |
 | **v1.1** | batch operations, `ezpdf info` | ✅ shipped |
 | **v2.0** | desktop app (Tauri v2 + Svelte 5) | ✅ shipped |
