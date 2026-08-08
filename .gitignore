@@ -13,3 +13,5 @@ ezpdf-app/gen/
 ezpdf-wasm/pkg/
 ezpdf-wasm/pkg-*/
 # src/wasm is generated but committed: Vercel has no Rust toolchain.
+.vercel
+.env*
