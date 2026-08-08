@@ -103,11 +103,14 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
+      # Pinned rather than `latest`: pnpm 11 requires Node >= 22.13 and dies on
+      # older runtimes with ERR_UNKNOWN_BUILTIN_MODULE: node:sqlite. 9 matches
+      # ezpdf-app/frontend/pnpm-lock.yaml, which is lockfileVersion 9.0.
       - uses: pnpm/action-setup@v4
         with:
-          version: latest
+          version: 9
           run_install: false
 
       - name: Install frontend dependencies
@@ -150,11 +153,14 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
+      # Pinned rather than `latest`: pnpm 11 requires Node >= 22.13 and dies on
+      # older runtimes with ERR_UNKNOWN_BUILTIN_MODULE: node:sqlite. 9 matches
+      # ezpdf-app/frontend/pnpm-lock.yaml, which is lockfileVersion 9.0.
       - uses: pnpm/action-setup@v4
         with:
-          version: latest
+          version: 9
           run_install: false
 
       - name: Install frontend dependencies
