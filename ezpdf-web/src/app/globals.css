@@ -89,6 +89,16 @@ textarea {
   }
 }
 
+/* Tailwind v3's Preflight carried `button, [role="button"] { cursor: pointer }`;
+   v4 dropped it, so every button fell back to the arrow cursor and stopped
+   reading as clickable. Restored here rather than as a `cursor-pointer` class on
+   each component, so bare <button> elements are covered too and no future one
+   can be missed. Disabled controls are excluded — they are not clickable. */
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']) {
+  cursor: pointer;
+}
+
 /* One focus treatment everywhere, keyboard-only. */
 :focus-visible {
   outline: 2px solid var(--color-accent-blue);
