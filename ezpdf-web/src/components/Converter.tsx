@@ -37,6 +37,7 @@ export function Converter({ userId }: { userId: string | null }) {
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const [result, setResult] = useState<OpResult | null>(null);
   const [saved, setSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
   const dropRef = useRef<HTMLDivElement>(null);
 
   const spec = specFor(op);
@@ -45,6 +46,7 @@ export function Converter({ userId }: { userId: string | null }) {
     async (incoming: File[]) => {
       setResult(null);
       setSaved(false);
+      setCopied(false);
       setStatus({ kind: 'idle' });
 
       const loaded: LoadedFile[] = await Promise.all(
@@ -78,6 +80,7 @@ export function Converter({ userId }: { userId: string | null }) {
     setOp(next);
     setResult(null);
     setSaved(false);
+    setCopied(false);
     setStatus({ kind: 'idle' });
     setTiles([]);
     if (!specFor(next).multiFile) setFiles((f) => f.slice(0, 1));
@@ -94,6 +97,7 @@ export function Converter({ userId }: { userId: string | null }) {
   const run = useCallback(async () => {
     setResult(null);
     setSaved(false);
+    setCopied(false);
     setStatus({
       kind: 'busy',
       message: spec.heavy ? 'Loading the Markdown engine…' : 'Working…',
@@ -140,6 +144,20 @@ export function Converter({ userId }: { userId: string | null }) {
     a.download = result.filename;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  // Copies the whole document, not `result.preview` — the preview is truncated
+  // to 1500 characters for display and would silently cut the Markdown short.
+  async function copy() {
+    if (typeof result?.data !== 'string') return;
+    try {
+      await navigator.clipboard.writeText(result.data);
+      setCopied(true);
+      // Revert so a second copy still reads as an available action.
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      setStatus({ kind: 'error', message: messageOf(err) });
+    }
   }
 
   async function save() {
@@ -285,6 +303,13 @@ export function Converter({ userId }: { userId: string | null }) {
 
             <div className="flex flex-wrap gap-2">
               <Button onClick={download}>Download</Button>
+              {/* Text results only. A PDF ArrayBuffer has nothing useful to put
+                  on the clipboard. */}
+              {typeof result.data === 'string' && (
+                <Button variant="tertiary" onClick={copy}>
+                  {copied ? 'Copied' : 'Copy'}
+                </Button>
+              )}
               <Button variant="tertiary" onClick={save} disabled={saved || busy}>
                 {signedIn ? 'Save to library' : 'Sign in to save'}
               </Button>
